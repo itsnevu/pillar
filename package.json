@@ -1,0 +1,34 @@
+{
+  "name": "pillar-finance",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "chain": "anvil --port ${ANVIL_PORT:-8545} --chain-id 31337",
+    "deploy:local": "cd contracts && forge script script/Deploy.s.sol:Deploy --rpc-url ${RPC_URL:-http://127.0.0.1:8545} --broadcast && cd .. && npm run abi:sync",
+    "abi:sync": "node scripts/sync-abi.mjs",
+    "contracts:build": "cd contracts && forge build",
+    "contracts:test": "cd contracts && forge test -vvv"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.102.8",
+    "next": "16.3.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "viem": "^2.56.3",
+    "wagmi": "^3.7.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

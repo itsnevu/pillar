@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" fill="none" role="img" aria-label="Pillar">
+  <!-- abacus -->
+  <rect x="4" y="4" width="28" height="4.2" rx="0.6" fill="#292524"/>
+  <!-- echinus -->
+  <path d="M7 8.2h22l-2.6 3.6H9.6Z" fill="#292524"/>
+  <!-- fluted shaft -->
+  <rect x="10.4" y="11.8" width="3.9" height="14.6" fill="#292524"/>
+  <rect x="16.05" y="11.8" width="3.9" height="14.6" fill="#292524"/>
+  <rect x="21.7" y="11.8" width="3.9" height="14.6" fill="#292524"/>
+  <!-- torus + plinth -->
+  <path d="M9.6 26.4h16.8l2.6 3.4H7Z" fill="#292524"/>
+  <rect x="4" y="29.8" width="28" height="3.6" rx="0.6" fill="#292524"/>
+</svg>
