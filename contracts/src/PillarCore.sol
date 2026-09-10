@@ -503,9 +503,16 @@ contract PillarCore is Ownable2Step, Pausable, ReentrancyGuard {
         return v * m.liqThresholdBps * WAD / (BPS * p.debt);
     }
 
+    /// @dev Compares by cross-multiplication rather than through `_ltv`, which floors.
+    ///      Flooring let a debt one unit above the limit report an LTV exactly equal to
+    ///      it, so `borrow` accepted an amount `maxBorrowable` had said was unavailable.
+    ///      The two now agree exactly, and the check is the stricter of the pair.
     function _requireLtvOk(Market storage m, Position storage p, uint256 price) internal view {
-        uint256 l = _ltv(m, p, price);
-        if (l > m.maxLtvBps) revert ExceedsMaxLtv(l, m.maxLtvBps);
+        if (p.debt == 0) return;
+        uint256 v = _assetToUsdg(m, p.collateral, price);
+        if (v == 0 || p.debt * BPS > v * m.maxLtvBps) {
+            revert ExceedsMaxLtv(_ltv(m, p, price), m.maxLtvBps);
+        }
     }
 
     /// @dev Smallest repay r that restores HF == 1:

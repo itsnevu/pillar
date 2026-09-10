@@ -542,7 +542,25 @@ contract PillarCoreTest is Test {
         }
         vm.stopPrank();
         uint256 v = core.collateralValue(alice, address(aapl));
-        assertLe(_debt(alice), v * 4000 / 10_000 + 1);
+        // Exact, with no slack: `borrow` and `maxBorrowable` agree to the unit.
+        assertLe(_debt(alice), v * 4000 / 10_000);
+    }
+
+    /// @dev The boundary the fuzzer found: flooring in `_ltv` used to let a borrow of
+    ///      exactly one unit above `maxBorrowable` through, so the number the protocol
+    ///      advertised was not the number it enforced.
+    function test_borrow_maxBorrowableIsExactlyTheLimit() public {
+        vm.startPrank(alice);
+        core.depositCollateral(address(aapl), COLL);
+        uint256 cap = core.maxBorrowable(alice, address(aapl));
+
+        vm.expectRevert();
+        core.borrow(address(aapl), cap + 1);
+
+        core.borrow(address(aapl), cap);
+        assertEq(_debt(alice), cap);
+        assertEq(core.maxBorrowable(alice, address(aapl)), 0, "nothing left to borrow");
+        vm.stopPrank();
     }
 
     function testFuzz_repay_debtDecreasesAndNeverGrows(uint256 borrowAmt, uint256 repayAmt, uint32 dt) public {
