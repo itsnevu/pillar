@@ -118,7 +118,7 @@ function Portfolio() {
                     <div className="text-[13px] text-ink mt-1">{p.market.name}</div>
                     <div className="mt-2 flex gap-1.5">
                       <Badge tone={p.market.open ? "ok" : "muted"}>{p.market.open ? "Open" : "Closed"}</Badge>
-                      {!p.market.priceFresh && <Badge tone="warn">Stale price</Badge>}
+                      {p.market.priceFresh === false && <Badge tone="warn">Stale price</Badge>}
                     </div>
                   </div>
                   <Cell label="Collateral">

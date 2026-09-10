@@ -44,7 +44,11 @@ function Inner({ symbol }: { symbol: string }) {
     );
   }
 
-  const market = pos?.market ?? { ...meta, priceFresh: false, liqThresholdBps: meta.maxLtvBps + 1000, liqBonusBps: 500, hasDeployment: false, price: undefined };
+  const market = pos?.market ?? { ...meta, priceFresh: undefined, liqThresholdBps: meta.maxLtvBps + 1000, liqBonusBps: 500, hasDeployment: false, price: undefined };
+  // Three states, not two: fresh, stale, and not yet known. Reporting the third as
+  // "stale" tells the reader the protocol has paused borrowing when in fact the
+  // page simply has not heard back.
+  const priceKnown = market.priceFresh !== undefined;
   const isOwn = viewing && connected && viewing.toLowerCase() === connected.toLowerCase();
 
   return (
@@ -56,7 +60,11 @@ function Inner({ symbol }: { symbol: string }) {
             <div className="flex items-center gap-3">
               <h1 className="font-serif text-[40px] leading-[1.05] text-ink">{meta.symbol}</h1>
               <Badge tone={market.open ? "ok" : "muted"}>{market.open ? "Open" : "Closed for new borrows"}</Badge>
-              <Badge tone={market.priceFresh ? "ok" : "warn"}>{market.priceFresh ? "Price fresh" : "Price stale"}</Badge>
+              {priceKnown && (
+                <Badge tone={market.priceFresh ? "ok" : "warn"}>
+                  {market.priceFresh ? "Price fresh" : "Price stale"}
+                </Badge>
+              )}
             </div>
             <p className="mt-2 text-[14px] text-muted">{meta.name} · tokenized stock collateral · borrow USDG</p>
           </div>
@@ -67,7 +75,11 @@ function Inner({ symbol }: { symbol: string }) {
       </section>
 
       <section className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Stat label="Oracle price" value={`$${fmtPrice(market.price)}`} sub={market.priceFresh ? "fresh" : "stale — new borrows paused"} />
+        <Stat
+          label="Oracle price"
+          value={market.price === undefined ? "—" : `$${fmtPrice(market.price)}`}
+          sub={!priceKnown ? "not read yet" : market.priceFresh ? "fresh" : "stale — new borrows paused"}
+        />
         <Stat label="Max LTV" value={`${market.maxLtvBps / 100}%`} sub={`liquidation at ${market.liqThresholdBps / 100}% · bonus ${market.liqBonusBps / 100}%`} />
         <Stat label="Market collateral" value={fmtStock(market.totalCollateral, 2)} sub={`${meta.symbol} deposited`} />
         <Stat label="Market debt" value={fmtUsdg(market.totalDebt, 0)} sub="USDG borrowed" />
@@ -83,13 +95,34 @@ function Inner({ symbol }: { symbol: string }) {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Stat label="Your collateral" value={fmtStock(pos?.collateral, 4)} sub={`${meta.symbol} · ${fmtUsdg(pos?.collateralValue, 0)} USDG`} />
-            <Stat label="Your debt" value={fmtUsdg(pos?.debt)} sub={`USDG · can still borrow ${fmtUsdg(pos?.maxBorrowable, 0)}`} />
-            <Stat label="Repaid by yield" value={fmtUsdg(pos?.yieldAccruedToDebt)} sub={`USDG · +${fmtUsdg(pos ? pos.yieldRateToDebt * 86_400n : undefined)} / day`} accent />
+            {/* With no position read, a sub-line reads as a broken sentence
+                ("can still borrow —"), so it falls back to the bare unit. */}
+            <Stat
+              label="Your collateral"
+              value={fmtStock(pos?.collateral, 4)}
+              sub={pos ? `${meta.symbol} · ${fmtUsdg(pos.collateralValue, 0)} USDG` : meta.symbol}
+            />
+            <Stat
+              label="Your debt"
+              value={fmtUsdg(pos?.debt)}
+              sub={pos ? `USDG · can still borrow ${fmtUsdg(pos.maxBorrowable, 0)}` : "USDG"}
+            />
+            <Stat
+              label="Repaid by yield"
+              value={fmtUsdg(pos?.yieldAccruedToDebt)}
+              sub={pos ? `USDG · +${fmtUsdg(pos.yieldRateToDebt * 86_400n)} / day` : "USDG"}
+              accent
+            />
             <Stat
               label="Est. time to zero"
               value={!pos || pos.debt === 0n ? (pos?.collateral ? "Paid" : "—") : fmtDuration(pos.secondsToZero)}
-              sub={pos && pos.debt > 0n && !pos.secondsToZero ? "yield is zero — debt holds, never grows" : "at current yield rate"}
+              sub={
+                !pos
+                  ? "no open position"
+                  : pos.debt > 0n && !pos.secondsToZero
+                    ? "yield is zero — debt holds, never grows"
+                    : "at current yield rate"
+              }
             />
           </div>
 

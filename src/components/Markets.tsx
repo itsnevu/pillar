@@ -89,15 +89,17 @@ function Status({ state }: { state: Market["state"] }) {
   );
 }
 
-function MarketTable({ group }: { group: Group }) {
+function MarketTable({ group, showCaption }: { group: Group; showCaption: boolean }) {
   const n = group.markets.length;
   return (
     <section>
       <h2>{group.title}</h2>
       <table className="rusd-market-table">
+        {/* The explanation belongs on the first table only; repeating it under
+            every group turned one useful sentence into three lines of noise. */}
         <caption className="borrow-table-caption">
-          {n} collateral market{n === 1 ? "" : "s"} · Open means the vault is enabled. Borrow capacity is
-          checked in the market.
+          {n} collateral market{n === 1 ? "" : "s"}
+          {showCaption && " · Open means the vault is enabled. Borrow capacity is checked in the market."}
         </caption>
         <thead>
           <tr>
@@ -166,7 +168,10 @@ export function Markets() {
       value: m.price !== undefined ? fmtPrice(m.price) : undefined,
       maxLtv: m.maxLtvBps ? m.maxLtvBps / 100 : undefined,
       state: m.open ? "open" : "closed",
-      stale: m.price !== undefined && !m.priceFresh,
+      // Only an explicit `false` means stale. While the read is in flight
+      // `priceFresh` is undefined, and rendering that as "borrowing paused"
+      // would announce a protocol state that is not happening.
+      stale: m.priceFresh === false,
     };
     const list = byTitle.get(cat.title);
     if (list) list.push(row);
@@ -193,8 +198,8 @@ export function Markets() {
   return (
     <>
       <div className="borrow-original-tables" id="markets">
-        {groups.map((g) => (
-          <MarketTable key={g.title} group={g} />
+        {groups.map((g, i) => (
+          <MarketTable key={g.title} group={g} showCaption={i === 0} />
         ))}
       </div>
       <p className="borrow-directory-note">

@@ -9,7 +9,12 @@ export type MarketLive = MarketMeta & {
   /** Oracle price, USD per token, 1e18. */
   price?: bigint;
   priceUpdatedAt?: bigint;
-  priceFresh: boolean;
+  /**
+   * Whether the oracle price is inside the staleness window. `undefined` means the
+   * chain has not answered — which is not the same claim as "the feed is stale",
+   * and must not be rendered as one.
+   */
+  priceFresh?: boolean;
   liqThresholdBps: number;
   liqBonusBps: number;
   totalCollateral?: bigint;
@@ -80,7 +85,7 @@ export function useMarkets() {
           totalDebt: mk?.[8],
           price: pr?.[0],
           priceUpdatedAt: pr?.[1],
-          priceFresh: fresh ?? false,
+          priceFresh: fresh,
           hasDeployment: hasDeployment && q.isSuccess,
         };
       }),

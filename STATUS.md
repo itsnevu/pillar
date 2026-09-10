@@ -27,6 +27,19 @@ Yang tersisa murni menunggu alamat/keputusan dari luar — tidak ada lagi kode m
 5. Ilustrasi hero = line-art SVG, bukan engraving foto seperti Turret.
 6. Audit sebelum mainnet.
 
+## Audit UI ✅ (10 Sep 2026)
+Screenshot semua halaman termasuk `/app/AAPL` yang belum pernah dilihat. Yang ketemu semuanya satu kelas yang sama: **UI menyatakan fakta protokol yang tidak sedang terjadi.**
+
+1. **Badge "Price stale · new borrows paused" muncul saat chain belum terbaca.** `priceFresh` dipakai sebagai `boolean` dengan default `false`, jadi "belum tahu" tidak bisa dibedakan dari "feed basi". Sekarang `boolean | undefined`: badge hanya tampil kalau nilainya diketahui, dan hanya `false` eksplisit yang berarti basi.
+2. **Health gauge menggambar busur penuh berwarna solid untuk posisi yang belum terbaca**, identik dengan "sehat sempurna" — `hf === undefined` diperlakukan sebagai infinite. Sekarang menampilkan track kosong.
+3. **Sub-baris jadi kalimat rusak** tanpa posisi: `USDG · can still borrow —`, `USDG · +— / day`. Sekarang jatuh ke unit polos.
+4. **Tabel landing berkedip "Stale · borrowing paused" di semua baris** selama read berlangsung. Sama, sekarang butuh `false` eksplisit.
+5. Caption yang sama diulang di bawah tiap tabel market — sekarang hanya di tabel pertama.
+
+Dua hal yang **bukan** bug dan sengaja tidak diubah:
+- Harga `—` di screenshot awal ternyata cuma read client-side yang belum selesai; dengan `--virtual-time-budget` harganya muncul.
+- Screenshot 390px terlihat seperti desktop terpotong. Chrome meng-clamp lebar window minimum ~500px, jadi itu artefak alat. Di 500px dan 700px layout mobile benar (hamburger muncul, konten pas). Breakpoint ≤360px belum bisa diverifikasi dengan cara ini.
+
 ## Artikel peluncuran ✅ (10 Sep 2026)
 Blog tidak lagi berisi satu post. Tiga artikel baru ditulis, masing-masing ~750-800 kata, dengan suara yang sama seperti ARTICLE.md dan argumen yang cocok dengan perilaku kontrak sungguhan:
 - **Why We Lend So Little Against Your Apple** (`docs/ARTICLE-LTV.md`) — kenapa LTV sengaja rendah: aritmetika gap akhir pekan (pinjam 70% lalu gap 15% = LTV 82% sebelum sempat bereaksi; pinjam 30% = 35%, aman).
