@@ -764,3 +764,8 @@ html,body{min-width:320px;background:var(--rusd-bg)}
 /* Pillar adds a Max LTV stat beside the indicative value; laid side by side so row height matches Turret. */
 .borrow-directory-row .borrow-directory-value{display:inline-grid;vertical-align:top;min-width:13em}
 @media (max-width:650px){.borrow-directory-row .borrow-directory-value{display:grid;min-width:0}.borrow-directory-row .borrow-directory-value:not(:last-of-type)>span:last-child{min-height:0}}
+
+/* Pillar: `rusd-text-link` is sized for standalone links (13px/700). Inside a
+   sentence that size dip reads as a chip, so it inherits the surrounding text. */
+.rusd-faq-heading p .rusd-text-link{font-size:inherit;font-weight:650;text-decoration:underline;text-decoration-color:#d6d3d1;text-underline-offset:3px;white-space:normal}
+.rusd-faq-heading p .rusd-text-link:hover{text-decoration-color:var(--rusd-ink)}

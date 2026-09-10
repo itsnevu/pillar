@@ -10,7 +10,7 @@ export function Tabs() {
           Self-repaying loans
         </Link>
         <Link href={LINKS.app}>Portfolio</Link>
-        <Link href={LINKS.docs}>How it works</Link>
+        <Link href="/#how">How it works</Link>
       </nav>
       <p className="borrow-pool-summary">
         <strong>Self-repaying loans:</strong> deposit stock tokens, borrow USDG at a conservative LTV, and

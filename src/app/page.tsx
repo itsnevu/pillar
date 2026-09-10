@@ -4,6 +4,8 @@ import { Banner, Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { Tabs } from "@/components/Tabs";
 import { Markets } from "@/components/Markets";
+import { HowItWorks } from "@/components/HowItWorks";
+import { Faq } from "@/components/Faq";
 import { Footer } from "@/components/Footer";
 
 export default function Home() {
@@ -18,6 +20,8 @@ export default function Home() {
             <Tabs />
             <Markets />
           </section>
+          <HowItWorks />
+          <Faq />
         </main>
         <Footer />
       </div>
