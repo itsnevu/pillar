@@ -27,6 +27,16 @@ Yang tersisa murni menunggu alamat/keputusan dari luar — tidak ada lagi kode m
 5. Ilustrasi hero = line-art SVG, bukan engraving foto seperti Turret.
 6. Audit sebelum mainnet.
 
+## Artikel peluncuran ✅ (10 Sep 2026)
+Blog tidak lagi berisi satu post. Tiga artikel baru ditulis, masing-masing ~750-800 kata, dengan suara yang sama seperti ARTICLE.md dan argumen yang cocok dengan perilaku kontrak sungguhan:
+- **Why We Lend So Little Against Your Apple** (`docs/ARTICLE-LTV.md`) — kenapa LTV sengaja rendah: aritmetika gap akhir pekan (pinjam 70% lalu gap 15% = LTV 82% sebelum sempat bereaksi; pinjam 30% = 35%, aman).
+- **What A Self-Repaying Loan Cannot Do** (`docs/ARTICLE-LIMITS.md`) — batas jujur: yield nol menghentikan pelunasan, likuidasi nyata walau parsial, dan semua sistem eksternal yang Pillar tidak kendalikan.
+- **An Oracle Should Refuse** (`docs/ARTICLE-ORACLE.md`) — kenapa oracle revert alih-alih mengembalikan nol, plafon circuit-breaker, dan kenapa staleness memblokir borrow tapi tidak pernah repay/harvest.
+
+`allPosts()` sekarang stable-sort: post dengan tanggal sama mempertahankan urutan deklarasi, karena set peluncuran ini semuanya bertanggal sama.
+
+Juga diperbaiki: `/app` menampilkan **"Paid"** di kartu "Est. time to zero" padahal belum ada posisi sama sekali — menyesatkan, seolah ada pinjaman yang sudah lunas. Sekarang `—` / "no open position" kalau tidak ada posisi terbuka.
+
 ## Halaman panjang & whitepaper ✅ (10 Sep 2026)
 Halaman prose sebelumnya melayang tanpa header/footer, hierarki judul rata (h1 seukuran h2), serif display tidak kepakai, dan teks menempel di tepi kiri. Sekarang semuanya duduk di dalam situs dan memakai bahasa desain landing.
 

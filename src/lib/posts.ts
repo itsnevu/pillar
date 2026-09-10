@@ -18,6 +18,9 @@ export type Post = {
  */
 const SOURCES: { slug: string; date: string; file: string }[] = [
   { slug: "the-most-expensive-trade-you-ever-made-was-a-sale", date: "2026-09-10", file: "ARTICLE.md" },
+  { slug: "why-we-lend-so-little-against-your-apple", date: "2026-09-10", file: "ARTICLE-LTV.md" },
+  { slug: "what-a-self-repaying-loan-cannot-do", date: "2026-09-10", file: "ARTICLE-LIMITS.md" },
+  { slug: "an-oracle-should-refuse", date: "2026-09-10", file: "ARTICLE-ORACLE.md" },
 ];
 
 function read(source: (typeof SOURCES)[number]): Post {
@@ -27,9 +30,16 @@ function read(source: (typeof SOURCES)[number]): Post {
   return { ...source, title, paragraphs, excerpt: paragraphs[0] ?? "" };
 }
 
-/** Newest first. */
+/**
+ * Newest first. Posts published on the same day keep the order they are declared
+ * in — the launch set all shares a date, and a stable sort is more useful there
+ * than an arbitrary one.
+ */
 export function allPosts(): Post[] {
-  return SOURCES.map(read).sort((a, b) => b.date.localeCompare(a.date));
+  return SOURCES.map(read)
+    .map((post, i) => ({ post, i }))
+    .sort((a, b) => b.post.date.localeCompare(a.post.date) || a.i - b.i)
+    .map(({ post }) => post);
 }
 
 export function postBySlug(slug: string): Post | undefined {

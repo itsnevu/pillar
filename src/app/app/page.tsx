@@ -29,6 +29,9 @@ function Portfolio() {
   const { active, totals, usdgCredit, isLoading, hasDeployment } = useUserPositions(mounted ? viewing : undefined);
 
   const secondsToZero = totals.debt > 0n && totals.yieldRateToDebt > 0n ? Number(totals.debt) / Number(totals.yieldRateToDebt) : undefined;
+  // "Paid" is only true of a position that existed and was cleared. With nothing
+  // deposited there is no loan to describe, so the stat reads as unknown.
+  const hasPosition = active.length > 0;
   const aggLtv = totals.collateralValue > 0n ? (totals.debt * 10_000n) / totals.collateralValue : 0n;
 
   return (
@@ -62,8 +65,14 @@ function Portfolio() {
         />
         <Stat
           label="Est. time to zero"
-          value={totals.debt === 0n ? "Paid" : fmtDuration(secondsToZero)}
-          sub={totals.debt > 0n && !secondsToZero ? "Yield is currently zero" : "at current yield rate"}
+          value={!hasPosition ? "—" : totals.debt === 0n ? "Paid" : fmtDuration(secondsToZero)}
+          sub={
+            !hasPosition
+              ? "no open position"
+              : totals.debt > 0n && !secondsToZero
+                ? "Yield is currently zero"
+                : "at current yield rate"
+          }
         />
       </section>
 

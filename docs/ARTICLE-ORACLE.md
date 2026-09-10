@@ -1,0 +1,21 @@
+An Oracle Should Refuse
+
+Most of the interesting decisions in a lending protocol are about what to do when the information is bad. Not wrong in an obvious way — wrong in the quiet way, where a number arrives on time, in the right format, and does not describe reality. What a protocol does in that moment determines what it is.
+
+The tempting behaviour is to keep going. Systems that keep going look robust. They stay up, they serve requests, they do not annoy anyone with an error. A price feed returns something odd, the code shrugs, and the protocol continues transacting against a number nobody could defend. This is the failure mode that has emptied more lending protocols than any clever exploit, and it almost never looks like a failure while it is happening. It looks like uptime.
+
+Pillar's oracle refuses instead. If an aggregator reports a price of zero, or a negative price, the adapter reverts. If it reports a round it never finished — a timestamp of zero, or an answer carried over from an earlier round while the current one is still open — the adapter reverts. It does not return a fallback, and it very deliberately does not return zero. The distinction is not academic: a caller that receives a revert cannot act on the bad number, whereas a caller that receives zero might act on it and call the result a price of nothing.
+
+There is a subtler case that we treat the same way. Aggregators have historically clamped their answers into a circuit-breaker band and then kept reporting the clamped value as though it were observed. The feed is live, the format is correct, the timestamp is fresh, and the number is fiction. So each feed can carry a ceiling, and a price above it is rejected rather than lent against. It is a crude instrument for a crude failure, and the alternative is to keep issuing loans against a price that stopped tracking the asset some hours ago.
+
+The result of all this refusing is that a market can go offline. That is a real cost, and we would rather state it plainly than pretend the design is free. If a feed breaks, you may be unable to borrow when you wanted to borrow. Refusing to act on a number you cannot defend costs convenience, and it buys the only thing that matters.
+
+Staleness is a separate decision, and the separation is itself a design choice. The oracle adapter reports the feed's observation timestamp exactly as it received it and passes no judgement on whether it is too old. The core protocol holds the staleness window and applies it. That means there is precisely one place in the system where the question "is this price too old to use" is answered, and no possibility of two components disagreeing about it — which is the sort of disagreement that produces an exploit rather than an error message.
+
+What happens when a price is stale is the part we think about most. New borrowing is blocked. Collateral withdrawal is blocked. Both of those are actions that could exploit a wrong number, and neither of them is urgent enough to justify the risk.
+
+But repayment is never blocked. Deposits are never blocked. The harvest that pays down your debt is never blocked. Every one of those actions makes your position safer, and a user must never be locked out of making themselves safer. It would be a strange protocol that froze your ability to reduce your own debt because it was uncertain about a price — and yet the symmetric implementation, the one that just pauses everything when something looks wrong, does exactly that. Symmetry is the easier thing to build and the wrong thing to build.
+
+The same instinct runs through the rest of the system. A harvest whose swap cannot be filled within a bounded distance of the oracle price reverts entirely rather than settling for whatever the venue offered, because the alternative is booking a repayment the protocol did not actually receive. A vault that has lost value produces a surplus of zero rather than a negative number that would have to be interpreted. Rounding always goes against the person harvesting, never against the principal, so that a position remains whole.
+
+None of these are exciting. They are the decisions that determine whether a protocol is still solvent after a bad week, and they are all versions of the same one: when you cannot defend the number, do not act on it.
