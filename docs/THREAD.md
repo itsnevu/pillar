@@ -44,7 +44,7 @@ The loan repays itself.
 
 No monthly payment. No due date. No refinancing.
 
-Every day your collateral earns, your debt gets smaller. Time is what pays it down, not you.
+Every harvest moves what your collateral earned onto the debt. Anyone can trigger one, including you. Time pays it down, not you.
 
 7/
 Say it plainly:
@@ -60,9 +60,9 @@ You never sold. You never repaid.
 8/
 How the machine is wired:
 
-Collateral in → routed to yield vaults → yield stream → applied to your debt balance, continuously.
+Collateral in → routed to yield vaults → yield accrues → harvest applies it straight to your debt.
 
-Not a rewards page you have to claim. A debt number that only goes down.
+Not a rewards page you claim for yourself. A debt number that only ever goes down.
 
 9/
 The honest version of that: if yield goes to zero, your debt stops shrinking.
@@ -81,7 +81,7 @@ A stock can gap 15% overnight against collateral backing a loan that has been li
 11/
 That is why LTV here is deliberately boring.
 
-Conservative from day one, tighter for volatile names, tighter again across a weekend.
+30–50% depending on the market. Tighter for volatile single names, widest for a broad ETF basket.
 
 The right answer to overnight gap risk is not a clever mechanism. It is not lending you as much.
 
