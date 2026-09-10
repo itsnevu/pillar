@@ -18,13 +18,22 @@
 - `npm run build` ✓ · `tsc` ✓ · `eslint` ✓
 
 ## Belum selesai ⏳
-1. ~~Tombol Connect di landing~~ **selesai** — `Header.tsx` sekarang pakai `<ConnectButton />` sungguhan. Tabel market di landing juga sudah live: status open/closed, Max LTV dan harga oracle dibaca dari chain lewat `useMarkets()`, plus baris peringatan kalau oracle basi. Fallback ke angka statis kalau chain tidak terjangkau.
-2. **Robinhood Chain** — `src/lib/chain.ts` masih placeholder. Butuh: RPC URL, chain id, alamat USDG asli, alamat stock token asli, oracle asli (Chainlink?).
-3. **Yield source asli** — sekarang mock yang mencetak USDG. Produksi: Mosaic vault / lending pool yang bayar dalam aset jaminan → perlu swap ke USDG saat harvest.
-4. Treasury masih pot sederhana (belum LP shares); belum ada pengetatan LTV akhir pekan; belum ada keeper otomatis untuk `harvest()`.
-5. Wallet flow baru diuji lewat `cast`, belum di-klik dengan MetaMask sungguhan.
+Semua yang tersisa menunggu data/keputusan dari luar kode — situsnya sendiri sudah siap produksi.
+
+1. **Robinhood Chain** — `src/lib/chain.ts` sudah sepenuhnya env-driven; tinggal isi `NEXT_PUBLIC_CHAIN_ID`, `NEXT_PUBLIC_RPC_URL`, `NEXT_PUBLIC_CHAIN_NAME` (lihat `.env.example`). Yang masih dibutuhkan: RPC publik, chain id, alamat USDG asli, alamat stock token asli, oracle asli (Chainlink?), lalu deploy ulang + `npm run abi:sync`.
+2. **Yield source asli** — sekarang mock yang mencetak USDG. Produksi: Mosaic vault / lending pool yang bayar dalam aset jaminan → perlu swap ke USDG saat harvest.
+3. Treasury masih pot sederhana (belum LP shares); belum ada pengetatan LTV akhir pekan; belum ada keeper otomatis untuk `harvest()`.
+4. Wallet flow baru diuji lewat `cast`, belum di-klik dengan MetaMask sungguhan.
+5. Handle X & Telegram belum ada → `NEXT_PUBLIC_X_URL` / `NEXT_PUBLIC_TELEGRAM_URL` kosong, footer otomatis menyembunyikan link-nya sampai diisi.
 6. Ilustrasi hero = line-art SVG, bukan engraving foto seperti Turret.
 7. Audit sebelum mainnet.
+
+## Kesiapan produksi ✅ (10 Sep 2026)
+- **Tidak ada lagi route mati.** Nav/tab sisa Turret (`/borrow`, `/earn`, `/portfolio`, `/borrow/fixed-term`, `/borrow/self-repaying`) dulu 404 semua; sekarang menunjuk ke `/#markets`, `/app`, `/docs`. Seluruh link internal di-crawl dari HTML hasil `next start` → 0 rusak.
+- **Halaman publik lengkap**: `/docs` (dokumentasi produk asli, bukan lagi dump ARTICLE.md), `/blog` + `/blog/<slug>` (post dibaca dari `docs/ARTICLE.md` lewat `src/lib/posts.ts`), `/risk`, `/terms`, `/privacy` — semua lewat shell bersama `src/components/ProsePage.tsx`.
+- **SEO/social**: `metadataBase`, canonical, OpenGraph + Twitter card, `src/app/robots.ts`, `src/app/sitemap.ts`, dan kartu OG 1200×630 yang di-generate (`src/app/opengraph-image.tsx`).
+- **Link terpusat** di `src/lib/links.ts`; tidak ada `href="#"` tersisa. Aset bawaan `create-next-app` di `public/` sudah dihapus.
+- `npm run build` ✓ · `tsc` ✓ · `eslint` ✓ (0 error) · `forge test` 43/43 ✓
 
 ## Cara jalankan lokal
 ```bash

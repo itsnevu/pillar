@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useMarkets } from "@/lib/hooks";
 import { fmtPrice } from "@/lib/contracts";
 
@@ -139,13 +141,13 @@ function MarketTable({ group }: { group: Group }) {
                 <Status state={m.state} />
               </td>
               <td>
-                <a
+                <Link
                   className="rusd-action rusd-action-secondary"
                   href={`/app/${m.ticker}`}
                   aria-label={`View ${m.ticker} market`}
                 >
                   View market
-                </a>
+                </Link>
               </td>
             </tr>
           ))}
@@ -178,13 +180,14 @@ export function Markets() {
 
   return (
     <>
-      <div className="borrow-original-tables">
+      <div className="borrow-original-tables" id="markets">
         {groups.map((g) => (
           <MarketTable key={g.title} group={g} />
         ))}
       </div>
       <p className="borrow-directory-note">
-        Want fixed terms instead? <a href="/borrow/fixed-term">Explore fixed-term loans</a>.
+        Loan-to-value limits are set conservatively because equity markets close while your loan stays
+        live. <Link href="/risk">How Pillar handles that risk</Link>.
       </p>
     </>
   );

@@ -1,3 +1,5 @@
+import { LINKS } from "@/lib/links";
+
 const TEXT_FONT = "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif";
 
 /** Hand-drawn Chainlink text-logo: hexagon ring + wordmark (84x21, same box Turret uses). */
@@ -46,13 +48,16 @@ function KyberSwapLogo() {
   );
 }
 
-const LINKS = [
-  { href: "mailto:support@pillar.finance", label: "support@pillar.finance" },
-  { href: "#", label: "Blog" },
-  { href: "#", label: "Documentation" },
-  { href: "#", label: "Agent brief" },
-  { href: "/terms", label: "Terms" },
-  { href: "#", label: "Risk" },
+/** Social entries are dropped when the handle is not configured yet. */
+const FOOTER_LINKS: { href: string; label: string }[] = [
+  { href: LINKS.support, label: "support@pillar.finance" },
+  { href: LINKS.blog, label: "Blog" },
+  { href: LINKS.docs, label: "Documentation" },
+  { href: LINKS.risk, label: "Risk" },
+  { href: LINKS.terms, label: "Terms" },
+  { href: LINKS.privacy, label: "Privacy" },
+  ...(LINKS.x ? [{ href: LINKS.x, label: "X" }] : []),
+  ...(LINKS.telegram ? [{ href: LINKS.telegram, label: "Telegram" }] : []),
 ];
 
 export function Footer() {
@@ -72,7 +77,7 @@ export function Footer() {
       <div className="rusd-frame rusd-footer-inner">
         <span>Self-repaying collateral credit · Robinhood Chain</span>
         <div className="rusd-footer-links">
-          {LINKS.map((l) => (
+          {FOOTER_LINKS.map((l) => (
             <a className="rusd-text-link" href={l.href} key={l.label}>
               {l.label}
             </a>

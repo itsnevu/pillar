@@ -1,11 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
+import { LINKS } from "@/lib/links";
+
 const NAV = [
-  { href: "/borrow", label: "Borrow", active: true },
-  { href: "/earn", label: "Earn", active: false },
-  { href: "/portfolio", label: "Portfolio", active: false },
+  { href: "/#markets", label: "Borrow", active: true },
+  { href: LINKS.docs, label: "Docs", active: false },
+  { href: LINKS.app, label: "Portfolio", active: false },
 ];
 
 /** Primary nav + the mobile toggle (Turret's `dockyard-header-navigation`). Only the toggle needs state. */
@@ -27,7 +30,7 @@ export function HeaderNavigation() {
       </button>
       <nav aria-label="Primary" className="rusd-nav" data-open={open ? "true" : "false"} id="nav">
         {NAV.map((item) => (
-          <a
+          <Link
             key={item.href}
             className="rusd-nav-link"
             href={item.href}
@@ -35,7 +38,7 @@ export function HeaderNavigation() {
             aria-current={item.active ? "page" : undefined}
           >
             {item.label}
-          </a>
+          </Link>
         ))}
       </nav>
     </div>
