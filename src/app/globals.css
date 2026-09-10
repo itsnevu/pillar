@@ -31,8 +31,15 @@ html {
   color-scheme: light;
 }
 
+/* The page is paper, so it gets a paper's tooth: a fractal-noise tile at ~3%,
+   fixed so it reads as the surface rather than as something scrolling over it.
+   It sits in the background, behind the ink, which is why text stays crisp. */
 body {
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.032'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: 15px;

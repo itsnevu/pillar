@@ -1,13 +1,23 @@
-function PlayIcon() {
+import Link from "next/link";
+
+function ArrowIcon() {
   return (
     <svg aria-hidden="true" fill="none" height="20" viewBox="0 0 24 24" width="20">
       <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
-      <path d="m10 8 6 4-6 4Z" fill="currentColor" />
+      <path d="M9.5 12h5m-2-2.25L14.75 12l-2.25 2.25" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
     </svg>
   );
 }
 
-const EXPLAINERS = ["How self-repay works", "How collateral earns"];
+/**
+ * These were buttons declaring `aria-haspopup="dialog"` with no handler: they
+ * promised a video and did nothing. The explanations exist now as pages, so they
+ * are links to them, and the icon says "go" rather than "play".
+ */
+const EXPLAINERS = [
+  { label: "How self-repay works", href: "/docs#the-loop" },
+  { label: "How collateral earns", href: "/whitepaper#yield" },
+];
 
 export function Hero() {
   return (
@@ -18,16 +28,16 @@ export function Hero() {
           Borrow USDG against your Robinhood Crypto tokenized stocks and let the yield repay the loan for
           you. Your position stays open the entire time.
         </p>
-        <div className="borrow-hero-videos" aria-label="Loan explainers">
-          {EXPLAINERS.map((label) => (
+        <nav className="borrow-hero-videos" aria-label="Loan explainers">
+          {EXPLAINERS.map(({ label, href }) => (
             <div className="_action_coq5c_144" key={label}>
-              <button aria-haspopup="dialog" className="rusd-text-link _trigger_coq5c_1" type="button">
-                <PlayIcon />
+              <Link className="rusd-text-link _trigger_coq5c_1" href={href}>
+                <ArrowIcon />
                 {label}
-              </button>
+              </Link>
             </div>
           ))}
-        </div>
+        </nav>
       </div>
 
       <figure className="rusd-position-preview turret-loan-story">

@@ -6,6 +6,17 @@
    `blog-article-heading` and `blog-prose` are already reserved by the display
    font rule in pillar.css; the layout for them lives here. */
 
+/* An incised rule: the hairline plus a white highlight on the far side, the way
+   a line cut into paper catches light. One custom property, applied wherever a
+   separator carries weight, so the whole document rules the same way. */
+.pillar-rule-below {
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.pillar-rule-above {
+  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.92);
+}
+
 /* ---------------------------------------------------------------- page frame */
 
 .pillar-doc {
@@ -17,6 +28,7 @@
   gap: 18px;
   padding: 26px 0 34px;
   border-bottom: 1px solid var(--rusd-line);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
 .pillar-doc-eyebrow {
@@ -285,6 +297,7 @@
   gap: 16px;
   padding: 26px 0 34px;
   border-bottom: 1px solid var(--rusd-line);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
 .blog-index-heading h1 {
@@ -307,6 +320,7 @@
   gap: 28px;
   padding: 30px 0;
   border-bottom: 1px solid var(--rusd-line);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
 .blog-archive time {
@@ -367,11 +381,13 @@
   height: 1px;
   margin-bottom: 38px;
   background: var(--rusd-line);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
 /* --------------------------------------------------------------- page footer */
 
 .pillar-doc-foot {
+  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.92);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -414,5 +430,32 @@
 
   .blog-prose {
     font-size: 16.5px;
+  }
+}
+
+/* ------------------------------------------------- article-only typography */
+
+/* `article.blog-prose` is the blog post; docs and the whitepaper use a div, and
+   keep lining figures because they are full of percentages and parameters. */
+article.blog-prose {
+  font-variant-numeric: oldstyle-nums;
+}
+
+/* The opening capital, set in the display face. Sized in `em` so it tracks the
+   lede's own larger size, and given a transparent-ish counter-space by eye. */
+article.blog-prose .pillar-first::first-letter {
+  float: left;
+  margin: 0.02em 0.08em 0 0;
+  color: var(--rusd-ink);
+  font-family: var(--rusd-display);
+  font-size: 3.35em;
+  font-weight: 400;
+  line-height: 0.82;
+  text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  article.blog-prose .pillar-first::first-letter {
+    font-size: 2.9em;
   }
 }

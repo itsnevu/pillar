@@ -9,7 +9,45 @@ import { AppShell, Badge, Stat } from "@/components/app/AppShell";
 import { HealthGauge } from "@/components/app/HealthGauge";
 import { ActionPanel } from "@/components/app/ActionPanel";
 import { useUserPositions, useMounted } from "@/lib/hooks";
-import { fmtDuration, fmtPrice, fmtStock, fmtUsdg, marketBySymbol, truncateAddress } from "@/lib/contracts";
+import { addresses, fmtDuration, fmtPrice, fmtStock, fmtUsdg, marketBySymbol, truncateAddress } from "@/lib/contracts";
+import { explorerUrl } from "@/lib/chain";
+import { explorerAddress } from "@/lib/links";
+
+/** The contracts this market actually runs on, so a reader can go and check. */
+function ContractList({ asset }: { asset: `0x${string}` }) {
+  const rows = [
+    { label: "PillarCore", address: addresses.pillarCore },
+    { label: "Collateral token", address: asset },
+    { label: "Price oracle", address: addresses.oracle },
+    { label: "Yield source", address: addresses.yieldSource },
+  ].filter((r): r is { label: string; address: `0x${string}` } => Boolean(r.address));
+  if (rows.length === 0) return null;
+
+  return (
+    <div className="mt-3 rounded-[12px] border border-line bg-surface p-5">
+      <div className="text-[11px] tracking-[0.12em] uppercase text-muted">Contracts</div>
+      <dl className="mt-3 grid gap-2 text-[12.5px]">
+        {rows.map((r) => {
+          const href = explorerAddress(explorerUrl, r.address);
+          return (
+            <div key={r.label} className="flex items-baseline justify-between gap-4">
+              <dt className="text-muted">{r.label}</dt>
+              <dd className="font-mono text-ink">
+                {href ? (
+                  <a className="underline underline-offset-2" href={href} target="_blank" rel="noreferrer">
+                    {truncateAddress(r.address)}
+                  </a>
+                ) : (
+                  truncateAddress(r.address)
+                )}
+              </dd>
+            </div>
+          );
+        })}
+      </dl>
+    </div>
+  );
+}
 
 export function MarketView({ symbol }: { symbol: string }) {
   return (
@@ -131,6 +169,8 @@ function Inner({ symbol }: { symbol: string }) {
             at most the amount that brings it back to exactly 1.0× and receives collateral worth that amount plus a {market.liqBonusBps / 100}%
             bonus. Anything larger reverts. Pending yield is applied first, so a position that yield already rescued cannot be liquidated.
           </div>
+
+          <ContractList asset={meta.asset} />
         </div>
 
         <ActionPanel market={market} position={pos} onDone={refetch} />
