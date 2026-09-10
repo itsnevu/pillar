@@ -1,8 +1,15 @@
 import type { Address } from "viem";
-import { PillarCoreAbi, MockERC20Abi, MockOracleAbi, MockYieldSourceAbi } from "./generated/abis";
+import {
+  PillarCoreAbi,
+  ChainlinkOracleAbi,
+  ERC4626YieldSourceAbi,
+  IERC20MetadataAbi,
+} from "./generated/abis";
 import { deployment } from "./generated/deployment";
 
-export { PillarCoreAbi, MockERC20Abi, MockOracleAbi, MockYieldSourceAbi };
+/** `Erc20Abi` is the standard interface, not any particular token's implementation:
+ *  USDG and the collateral tokens are issued by other people. */
+export { PillarCoreAbi, ChainlinkOracleAbi, ERC4626YieldSourceAbi, IERC20MetadataAbi as Erc20Abi };
 
 export type MarketMeta = {
   symbol: string;

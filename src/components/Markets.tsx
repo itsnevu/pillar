@@ -8,8 +8,10 @@ import { fmtPrice } from "@/lib/contracts";
 type Market = {
   ticker: string;
   name: string;
-  value: string;
-  maxLtv: number;
+  /** Oracle price, formatted. Undefined until the chain answers — never a placeholder. */
+  value?: string;
+  /** Max LTV in percent, read from the market. Undefined until the chain answers. */
+  maxLtv?: number;
   state?: "open" | "closed";
   /** On-chain price exists but is older than the staleness window: borrowing is blocked. */
   stale?: boolean;
@@ -17,37 +19,29 @@ type Market = {
 
 type Group = { title: string; markets: Market[] };
 
-const GROUPS: Group[] = [
-  {
-    title: "Stocks",
-    markets: [
-      { ticker: "AAPL", name: "Apple", value: "312.6794", maxLtv: 40 },
-      { ticker: "MSFT", name: "Microsoft", value: "491.6189", maxLtv: 40 },
-      { ticker: "GOOGL", name: "Alphabet", value: "331.6927", maxLtv: 40 },
-      { ticker: "AMZN", name: "Amazon", value: "251.527", maxLtv: 40 },
-      { ticker: "META", name: "Meta Platforms", value: "651.7102", maxLtv: 35 },
-      { ticker: "NVDA", name: "Nvidia", value: "224.6168", maxLtv: 35 },
-      { ticker: "AMD", name: "AMD", value: "524.5592", maxLtv: 35 },
-      { ticker: "MU", name: "Micron", value: "1,023.4692", maxLtv: 30 },
-      { ticker: "TSLA", name: "Tesla", value: "368.1579", maxLtv: 30 },
-    ],
-  },
-  {
-    title: "ETFs",
-    markets: [
-      { ticker: "SPY", name: "S&P 500 ETF", value: "761.5574", maxLtv: 50 },
-      { ticker: "QQQ", name: "Nasdaq-100 ETF", value: "716.9059", maxLtv: 45 },
-    ],
-  },
-  {
-    title: "Metals",
-    markets: [{ ticker: "SLV", name: "Silver", value: "61.4422", maxLtv: 35, state: "closed" }],
-  },
-  {
-    title: "Memecoins",
-    markets: [{ ticker: "CASHCAT", name: "Cash Cat", value: "0.1755", maxLtv: 15 }],
-  },
-];
+/**
+ * Which table a ticker belongs in, and the display name to show beside it.
+ * This is the only thing about a market that is hard-coded — a label, not a
+ * number. Price, max LTV and open/closed are read from the chain, and a market
+ * that is not in the deployment is not shown at all.
+ */
+const CATEGORY: Record<string, { title: string; name?: string }> = {
+  AAPL: { title: "Stocks" },
+  MSFT: { title: "Stocks" },
+  GOOGL: { title: "Stocks" },
+  AMZN: { title: "Stocks" },
+  META: { title: "Stocks" },
+  NVDA: { title: "Stocks" },
+  AMD: { title: "Stocks" },
+  MU: { title: "Stocks" },
+  TSLA: { title: "Stocks" },
+  SPY: { title: "ETFs" },
+  QQQ: { title: "ETFs" },
+  SLV: { title: "Metals" },
+  CASHCAT: { title: "Memecoins" },
+};
+
+const CATEGORY_ORDER = ["Stocks", "ETFs", "Metals", "Memecoins", "Other"];
 
 function StatusHeading() {
   return (
@@ -123,12 +117,12 @@ function MarketTable({ group }: { group: Group }) {
                   <span>{m.name}</span>
                 </div>
                 <div className="borrow-directory-value">
-                  <span>Indicative value</span>
-                  <span>{m.value} USDG</span>
+                  <span>Oracle price</span>
+                  <span>{m.value ? `${m.value} USDG` : "—"}</span>
                 </div>
                 <div className="borrow-directory-value">
                   <span>Max LTV</span>
-                  <span>{m.maxLtv}%</span>
+                  <span>{m.maxLtv !== undefined ? `${m.maxLtv}%` : "—"}</span>
                 </div>
                 {m.stale && (
                   <div className="borrow-directory-value">
@@ -158,25 +152,43 @@ function MarketTable({ group }: { group: Group }) {
 }
 
 export function Markets() {
-  const { markets, hasDeployment } = useMarkets();
+  const { markets, hasDeployment, isLoading, isError } = useMarkets();
 
-  // Overlay on-chain status, LTV and oracle price onto the static rows, matched by ticker.
-  // Falls back to the static values whenever the chain has no deployment or a read failed.
-  const live = new Map(markets.map((m) => [m.symbol, m]));
-  const groups: Group[] = GROUPS.map((g) => ({
-    ...g,
-    markets: g.markets.map((m) => {
-      const l = hasDeployment ? live.get(m.ticker) : undefined;
-      if (!l) return m;
-      return {
-        ...m,
-        value: l.price !== undefined ? fmtPrice(l.price) : m.value,
-        maxLtv: l.maxLtvBps ? l.maxLtvBps / 100 : m.maxLtv,
-        state: l.open ? ("open" as const) : ("closed" as const),
-        stale: l.price !== undefined && !l.priceFresh,
-      };
-    }),
+  // Every row is a market the chain actually reports. There is no static price
+  // table to fall back on: a number on this page is either read from the
+  // contract or it is not shown.
+  const byTitle = new Map<string, Market[]>();
+  for (const m of markets) {
+    const cat = CATEGORY[m.symbol] ?? { title: "Other" };
+    const row: Market = {
+      ticker: m.symbol,
+      name: cat.name ?? m.name,
+      value: m.price !== undefined ? fmtPrice(m.price) : undefined,
+      maxLtv: m.maxLtvBps ? m.maxLtvBps / 100 : undefined,
+      state: m.open ? "open" : "closed",
+      stale: m.price !== undefined && !m.priceFresh,
+    };
+    const list = byTitle.get(cat.title);
+    if (list) list.push(row);
+    else byTitle.set(cat.title, [row]);
+  }
+
+  const groups: Group[] = CATEGORY_ORDER.filter((t) => byTitle.has(t)).map((title) => ({
+    title,
+    markets: byTitle.get(title)!,
   }));
+
+  if (groups.length === 0) {
+    return (
+      <p className="borrow-directory-note" id="markets">
+        {isLoading
+          ? "Loading markets from the chain…"
+          : isError || !hasDeployment
+            ? "Markets are unavailable right now — the app could not reach the chain. Nothing on this page is a placeholder, so no figures are shown until it can."
+            : "No markets are listed yet."}
+      </p>
+    );
+  }
 
   return (
     <>
@@ -186,8 +198,9 @@ export function Markets() {
         ))}
       </div>
       <p className="borrow-directory-note">
-        Loan-to-value limits are set conservatively because equity markets close while your loan stays
-        live. <Link href="/risk">How Pillar handles that risk</Link>.
+        Prices and limits above are read live from the protocol. Loan-to-value limits are set
+        conservatively because equity markets close while your loan stays live.{" "}
+        <Link href="/risk">How Pillar handles that risk</Link>.
       </p>
     </>
   );

@@ -2,9 +2,9 @@
 pragma solidity ^0.8.24;
 
 import {Test} from "forge-std/Test.sol";
-import {MockERC20} from "../src/MockERC20.sol";
-import {MockOracle} from "../src/MockOracle.sol";
-import {MockYieldSource} from "../src/MockYieldSource.sol";
+import {MockERC20} from "./mocks/MockERC20.sol";
+import {MockOracle} from "./mocks/MockOracle.sol";
+import {MockYieldSource} from "./mocks/MockYieldSource.sol";
 import {PillarCore} from "../src/PillarCore.sol";
 import {IYieldSource} from "../src/IYieldSource.sol";
 import {IPriceOracle} from "../src/IPriceOracle.sol";

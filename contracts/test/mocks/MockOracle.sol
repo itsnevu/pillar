@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {IPriceOracle} from "./IPriceOracle.sol";
+import {IPriceOracle} from "../../src/IPriceOracle.sol";
 
 /// @title MockOracle
 /// @notice Owner-set price feed for local development and tests.

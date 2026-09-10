@@ -3,7 +3,7 @@
 import { useMemo, useSyncExternalStore } from "react";
 import { useReadContracts } from "wagmi";
 import type { Address } from "viem";
-import { MARKETS, PillarCoreAbi, MockOracleAbi, addresses, hasDeployment, type MarketMeta } from "./contracts";
+import { MARKETS, PillarCoreAbi, ChainlinkOracleAbi, addresses, hasDeployment, type MarketMeta } from "./contracts";
 
 export type MarketLive = MarketMeta & {
   /** Oracle price, USD per token, 1e18. */
@@ -53,7 +53,7 @@ export function useMarkets() {
       hasDeployment && core && oracle
         ? MARKETS.flatMap((m) => [
             { address: core, abi: PillarCoreAbi, functionName: "markets", args: [m.asset] } as const,
-            { address: oracle, abi: MockOracleAbi, functionName: "getPrice", args: [m.asset] } as const,
+            { address: oracle, abi: ChainlinkOracleAbi, functionName: "getPrice", args: [m.asset] } as const,
             { address: core, abi: PillarCoreAbi, functionName: "isPriceFresh", args: [m.asset] } as const,
           ])
         : [],

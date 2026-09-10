@@ -18,15 +18,36 @@
 - `npm run build` ✓ · `tsc` ✓ · `eslint` ✓
 
 ## Belum selesai ⏳
-Semua yang tersisa menunggu data/keputusan dari luar kode — situsnya sendiri sudah siap produksi.
+Yang tersisa murni menunggu alamat/keputusan dari luar — tidak ada lagi kode mock yang harus ditulis.
 
-1. **Robinhood Chain** — `src/lib/chain.ts` sudah sepenuhnya env-driven; tinggal isi `NEXT_PUBLIC_CHAIN_ID`, `NEXT_PUBLIC_RPC_URL`, `NEXT_PUBLIC_CHAIN_NAME` (lihat `.env.example`). Yang masih dibutuhkan: RPC publik, chain id, alamat USDG asli, alamat stock token asli, oracle asli (Chainlink?), lalu deploy ulang + `npm run abi:sync`.
-2. **Yield source asli** — sekarang mock yang mencetak USDG. Produksi: Mosaic vault / lending pool yang bayar dalam aset jaminan → perlu swap ke USDG saat harvest.
-3. Treasury masih pot sederhana (belum LP shares); belum ada pengetatan LTV akhir pekan; belum ada keeper otomatis untuk `harvest()`.
-4. Wallet flow baru diuji lewat `cast`, belum di-klik dengan MetaMask sungguhan.
-5. Handle X & Telegram belum ada → `NEXT_PUBLIC_X_URL` / `NEXT_PUBLIC_TELEGRAM_URL` kosong, footer otomatis menyembunyikan link-nya sampai diisi.
-6. Ilustrasi hero = line-art SVG, bukan engraving foto seperti Turret.
-7. Audit sebelum mainnet.
+1. **Alamat Robinhood Chain** — semuanya sudah env-driven. Yang dibutuhkan: RPC publik + chain id, alamat USDG asli, alamat stock token asli, alamat **Chainlink aggregator** per market, alamat **vault ERC-4626** per market, dan alamat **router swap**. Isi ke `script/markets.<chainId>.json` (contoh: `script/markets.example.json`) lalu jalankan `Deploy.s.sol`.
+2. Treasury masih pot sederhana (belum LP shares); belum ada pengetatan LTV akhir pekan; belum ada keeper otomatis untuk `harvest()`.
+3. Wallet flow baru diuji lewat `cast` + suite Foundry, belum di-klik dengan MetaMask sungguhan.
+4. Handle X & Telegram belum ada → `NEXT_PUBLIC_X_URL` / `NEXT_PUBLIC_TELEGRAM_URL` kosong, footer otomatis menyembunyikan link-nya.
+5. Ilustrasi hero = line-art SVG, bukan engraving foto seperti Turret.
+6. Audit sebelum mainnet.
+
+## Bebas mock ✅ (10 Sep 2026)
+`contracts/src/` sekarang **tidak berisi satu pun mock**. Semua mock pindah ke `contracts/test/mocks/` dan tidak bisa ikut ter-deploy oleh script produksi.
+
+**Kontrak produksi baru**
+- `ChainlinkOracle.sol` — satu aggregator Chainlink per aset, dinormalisasi ke 1e18. Menolak jawaban nol/negatif, ronde yang belum selesai, dan harga di atas plafon per-feed (`maxAnswer`, penjaga kalau feed "pinned" di circuit breaker). Melaporkan `updatedAt` apa adanya — kebijakan staleness tetap satu tempat di PillarCore. **17 test.**
+- `ERC4626YieldSource.sol` — jaminan masuk ke vault ERC-4626 sungguhan; yield = `convertToAssets(shares) − principal`. `harvest` menebus persis surplusnya, menukarnya ke USDG lewat router dengan batas bawah dari harga oracle dikurangi toleransi slippage (plafon 10%). Vault rugi → surplus nol, bukan angka karangan. Pembulatan selalu memihak protokol sehingga principal tetap utuh. `yieldRatePerSecond` **realized**, bukan proyeksi. **31 test.**
+- `IAggregatorV3.sol`, `ISwapRouter.sol` — interface eksternal.
+
+**Bukti end-to-end** — `test/ProductionStack.t.sol` (8 test) menjalankan PillarCore di atas ChainlinkOracle + ERC4626YieldSource, tanpa satu pun mock di `src/`:
+- yield melunasi utang tanpa peminjam bayar sepeser pun ($30k jaminan, 8%/thn → $2.160 masuk ke utang setelah potongan protokol)
+- 6× harvest tahunan → utang **nol**, jaminan kembali **utuh 100 AAPL**
+- yield nol → utang **diam**, tidak tumbuh
+- feed basi memblokir borrow tapi tidak repay; feed jawab 0 → market berhenti total
+- gap Senin −40% → likuidasi **parsial**, over-liquidate revert, posisi masih dipegang user
+- swap gagal → harvest revert, utang tidak berubah (protokol tidak pernah membukukan pelunasan yang tidak diterima)
+
+**Frontend** — tidak ada lagi angka karangan. Tabel market digerakkan penuh oleh data chain: hanya market yang benar-benar ada di deployment yang ditampilkan (6, bukan 13 baris fiksi), harga oracle tampil `—` sampai chain menjawab, dan kalau chain tak terjangkau muncul pesan eksplisit alih-alih harga palsu. ABI yang di-generate juga produksi saja (`ChainlinkOracle`, `ERC4626YieldSource`, `IERC20Metadata`) — tidak mungkin lagi ter-compile terhadap `MockOracle`.
+
+**Script** — `DeployLocal.s.sol` (anvil, pakai mock) dipisah dari `Deploy.s.sol` (produksi, menolak jalan di chain 31337, semua alamat dari env + `markets.<chainId>.json`, membuktikan tiap feed menjawab sebelum market di-list).
+
+**Test: 99 lulus** (43 PillarCore + 17 oracle + 31 yield source + 8 integrasi), 0 gagal.
 
 ## Kesiapan produksi ✅ (10 Sep 2026)
 - **Tidak ada lagi route mati.** Nav/tab sisa Turret (`/borrow`, `/earn`, `/portfolio`, `/borrow/fixed-term`, `/borrow/self-repaying`) dulu 404 semua; sekarang menunjuk ke `/#markets`, `/app`, `/docs`. Seluruh link internal di-crawl dari HTML hasil `next start` → 0 rusak.

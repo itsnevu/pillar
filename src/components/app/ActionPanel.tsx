@@ -4,7 +4,7 @@ import { useState } from "react";
 import { parseUnits, type Address, type Hash } from "viem";
 import { useAccount, useConfig, useReadContracts, useWriteContract } from "wagmi";
 import { waitForTransactionReceipt } from "wagmi/actions";
-import { MockERC20Abi, PillarCoreAbi, STOCK_DECIMALS, USDG_DECIMALS, addresses, fmtStock, fmtUsdg } from "@/lib/contracts";
+import { Erc20Abi, PillarCoreAbi, STOCK_DECIMALS, USDG_DECIMALS, addresses, fmtStock, fmtUsdg } from "@/lib/contracts";
 import type { MarketLive, UserPosition } from "@/lib/hooks";
 
 type Tab = "deposit" | "borrow" | "repay" | "withdraw";
@@ -43,9 +43,9 @@ export function ActionPanel({ market, position, onDone }: { market: MarketLive; 
   const bal = useReadContracts({
     contracts: address
       ? [
-          { address: market.asset, abi: MockERC20Abi, functionName: "balanceOf", args: [address] } as const,
-          { address: usdg, abi: MockERC20Abi, functionName: "balanceOf", args: [address] } as const,
-          { address: token, abi: MockERC20Abi, functionName: "allowance", args: [address, core] } as const,
+          { address: market.asset, abi: Erc20Abi, functionName: "balanceOf", args: [address] } as const,
+          { address: usdg, abi: Erc20Abi, functionName: "balanceOf", args: [address] } as const,
+          { address: token, abi: Erc20Abi, functionName: "allowance", args: [address, core] } as const,
         ]
       : [],
     query: { enabled: !!address },
@@ -94,7 +94,7 @@ export function ActionPanel({ market, position, onDone }: { market: MarketLive; 
     try {
       if (!approvalOk) {
         setPhase("approve-wallet");
-        const hash = await writeContractAsync({ address: token, abi: MockERC20Abi, functionName: "approve", args: [core, parsed] });
+        const hash = await writeContractAsync({ address: token, abi: Erc20Abi, functionName: "approve", args: [core, parsed] });
         setPhase("approve-mining");
         setLastHash(hash);
         await waitForTransactionReceipt(config, { hash });
