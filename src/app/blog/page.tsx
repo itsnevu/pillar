@@ -1,25 +1,49 @@
 import Link from "next/link";
-import { ProsePage } from "@/components/ProsePage";
+import "@/styles/pillar.css";
+import "@/styles/prose.css";
+
+import { Banner, Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { allPosts, formatDate } from "@/lib/posts";
 
 export const metadata = {
   title: "Blog — Pillar Finance",
-  description: "Writing from Pillar on self-repaying credit, collateral, and lending against assets whose markets close.",
+  description:
+    "Writing from Pillar on self-repaying credit, collateral, and lending against assets whose markets close.",
 };
 
 export default function Page() {
   const posts = allPosts();
   return (
-    <ProsePage title="Blog" intro="Notes on self-repaying credit and the constraints that shape it.">
-      {posts.map((p) => (
-        <article key={p.slug} style={{ display: "grid", gap: "0.6rem" }}>
-          <p className="borrow-directory-note" style={{ margin: 0 }}>{formatDate(p.date)}</p>
-          <h2 style={{ fontSize: "1.25rem", lineHeight: 1.25, margin: 0 }}>
-            <Link className="rusd-text-link" href={`/blog/${p.slug}`}>{p.title}</Link>
-          </h2>
-          <p style={{ margin: 0 }}>{p.excerpt.slice(0, 240).trimEnd()}…</p>
-        </article>
-      ))}
-    </ProsePage>
+    <>
+      <Banner />
+      <div className="rusd-shell p2p-app-shell">
+        <Header />
+        <main className="rusd-frame rusd-main pillar-doc">
+          <header className="blog-index-heading">
+            <p className="pillar-doc-eyebrow">Writing</p>
+            <h1>Blog</h1>
+            <p className="pillar-doc-lede">
+              Notes on self-repaying credit and the constraints that shape it.
+            </p>
+          </header>
+
+          <div className="blog-archive">
+            {posts.map((p) => (
+              <article key={p.slug}>
+                <time dateTime={p.date}>{formatDate(p.date)}</time>
+                <div>
+                  <h2>
+                    <Link href={`/blog/${p.slug}`}>{p.title}</Link>
+                  </h2>
+                  <p>{p.excerpt.slice(0, 220).trimEnd()}…</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </main>
+        <Footer />
+      </div>
+    </>
   );
 }

@@ -7,14 +7,24 @@ export const metadata = {
     "The honest limits of a self-repaying loan: yield can stop, collateral markets close while the loan stays live, liquidation is partial but real.",
 };
 
+const TOC = [
+  { id: "yield-can-stop", heading: "Yield can stop" },
+  { id: "markets-close", heading: "The market closes; your loan does not" },
+  { id: "liquidation", heading: "Liquidation is partial, but real" },
+  { id: "stale-oracles", heading: "Oracles can go stale" },
+  { id: "contract-risk", heading: "Contract and counterparty risk" },
+];
+
 export default function Page() {
   return (
     <ProsePage
-      title="Risk"
-      intro="Everything below is a limit of the product, stated in the same place rather than scattered through the marketing."
-      updated="10 September 2026"
+      eyebrow="Risk disclosure"
+      title="What can go wrong"
+      lede="Every limit of the product, stated in one place rather than scattered through the marketing."
+      meta={["Updated 10 September 2026"]}
+      toc={TOC}
     >
-      <Section heading="Yield can stop, and then so does the repayment">
+      <Section id="yield-can-stop" heading="Yield can stop, and then so does the repayment">
         <p>
           A self-repaying loan repays itself at the speed the collateral earns, and no faster. If the yield rate
           goes to zero your debt stops shrinking. It does not grow — Pillar charges no interest and nothing accrues
@@ -23,7 +33,7 @@ export default function Page() {
         </p>
       </Section>
 
-      <Section heading="The collateral market closes; your loan does not">
+      <Section id="markets-close" heading="The collateral market closes; your loan does not">
         <p>
           A tokenized equity tracks a market that shuts on Friday afternoon and does not reopen until Monday. Your
           loan stays live every second in between. On Monday that stock can open well below Friday&apos;s close on an
@@ -37,7 +47,7 @@ export default function Page() {
         </p>
       </Section>
 
-      <Section heading="Liquidation is partial, but it is real">
+      <Section id="liquidation" heading="Liquidation is partial, but it is real">
         <p>
           When a position becomes unhealthy, the contract computes the smallest repayment that restores it to health
           and reverts any liquidation attempting to seize more. You lose a slice, not the position. That is a
@@ -47,11 +57,11 @@ export default function Page() {
         </p>
         <p>
           Your health factor, current loan-to-value, and the percentage the price would have to fall before
-          liquidation are shown continuously on the <Link className="rusd-text-link" href="/app">dashboard</Link>.
+          liquidation are shown continuously on the <Link href="/app">dashboard</Link>.
         </p>
       </Section>
 
-      <Section heading="Oracles can go stale">
+      <Section id="stale-oracles" heading="Oracles can go stale">
         <p>
           When a price feed is stale, Pillar blocks new borrows and collateral withdrawals, because those are the
           actions that could exploit a wrong number. Repayment, deposits, and the yield harvest are never blocked —
@@ -60,7 +70,7 @@ export default function Page() {
         </p>
       </Section>
 
-      <Section heading="Smart contract and counterparty risk">
+      <Section id="contract-risk" heading="Smart contract and counterparty risk">
         <p>
           Pillar is software. Bugs in the protocol, in the yield source it routes collateral to, in the oracle it
           reads, or in the token contracts themselves can cause loss. The USDG you borrow comes from a treasury the
@@ -69,8 +79,8 @@ export default function Page() {
         </p>
         <p>
           The protocol is in open beta. Start with small amounts. See also the{" "}
-          <Link className="rusd-text-link" href="/terms">terms</Link> and the{" "}
-          <Link className="rusd-text-link" href="/docs">documentation</Link>.
+          <Link href="/terms">terms</Link> and the{" "}
+          <Link href="/docs">documentation</Link>.
         </p>
       </Section>
     </ProsePage>

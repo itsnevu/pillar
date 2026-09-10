@@ -53,6 +53,7 @@ const FOOTER_LINKS: { href: string; label: string }[] = [
   { href: LINKS.support, label: "support@pillar.finance" },
   { href: LINKS.blog, label: "Blog" },
   { href: LINKS.docs, label: "Documentation" },
+  { href: LINKS.whitepaper, label: "Whitepaper" },
   { href: LINKS.risk, label: "Risk" },
   { href: LINKS.terms, label: "Terms" },
   { href: LINKS.privacy, label: "Privacy" },

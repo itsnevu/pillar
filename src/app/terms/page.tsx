@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function Page() {
   return (
-    <ProsePage title="Terms" updated="10 September 2026">
+    <ProsePage eyebrow="Legal" title="Terms" lede="Pillar Finance is software, not a bank or a lender of record. What that means for you." meta={["Updated 10 September 2026"]}>
           <p>Pillar Finance is software, not a bank or a lender of record. It is provided as is, without warranty, and responsibility for your own funds stays with you.</p>
           <p>Pillar charges no interest on a loan. The protocol takes a share of the yield your collateral produces. If that yield falls to zero, your debt stops shrinking. It never grows on its own, but it does not disappear either.</p>
           <p>Loans are overcollateralised and can be liquidated. Liquidation is partial by construction: the contract computes the smallest repayment that restores your position to health and rejects anything larger. You can still lose part of your collateral.</p>

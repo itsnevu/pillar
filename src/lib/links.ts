@@ -16,6 +16,7 @@ export const LINKS = {
   // Live pages in this app:
   app: "/app",
   docs: "/docs",
+  whitepaper: "/whitepaper",
   blog: "/blog",
   risk: "/risk",
   terms: "/terms",

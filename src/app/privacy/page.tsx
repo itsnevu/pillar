@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function Page() {
   return (
-    <ProsePage title="Privacy" updated="10 September 2026">
+    <ProsePage eyebrow="Legal" title="Privacy" lede="No account, no signup, no identity documents. What the site sees and what it never collects." meta={["Updated 10 September 2026"]}>
           <p>There is no account and no signup. Pillar does not ask for your name, email, or identity documents.</p>
           <p>The site sees your public wallet address once you connect, plus ordinary web request data such as IP address and browser type, used only to serve the site and spot abuse.</p>
           <p>Deposits, borrows, repayments, harvests, and liquidations are recorded on a public blockchain. They are readable by anyone and cannot be deleted.</p>

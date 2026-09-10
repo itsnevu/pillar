@@ -1,0 +1,418 @@
+/* Long-form pages: docs, whitepaper, risk, terms, privacy, blog.
+   Built on the same tokens as the landing page (--rusd-*) so a reader moving
+   from the hero into the documentation never crosses a design seam.
+
+   The class names `blog-index-heading`, `blog-feature`, `blog-archive`,
+   `blog-article-heading` and `blog-prose` are already reserved by the display
+   font rule in pillar.css; the layout for them lives here. */
+
+/* ---------------------------------------------------------------- page frame */
+
+.pillar-doc {
+  padding: 8px 0 12px;
+}
+
+.pillar-doc-head {
+  display: grid;
+  gap: 18px;
+  padding: 26px 0 34px;
+  border-bottom: 1px solid var(--rusd-line);
+}
+
+.pillar-doc-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: var(--rusd-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pillar-doc-eyebrow::after {
+  flex: 1;
+  height: 1px;
+  background: var(--rusd-line);
+  content: "";
+}
+
+.pillar-doc-head h1 {
+  max-width: 20ch;
+  margin: 0;
+  color: var(--rusd-ink);
+  font-family: var(--rusd-display);
+  font-size: clamp(38px, 4.6vw, 60px);
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.pillar-doc-lede {
+  max-width: 58ch;
+  margin: 0;
+  color: var(--rusd-muted);
+  font-size: clamp(16px, 1.6vw, 19px);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.pillar-doc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 0;
+  color: var(--rusd-muted);
+  font-size: 12.5px;
+}
+
+/* ------------------------------------------------------- body + optional TOC */
+
+.pillar-doc-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 44px;
+  padding-top: 40px;
+}
+
+.pillar-doc-body[data-toc="true"] {
+  grid-template-columns: minmax(0, 1fr) 208px;
+}
+
+.pillar-doc-toc {
+  position: sticky;
+  top: 96px;
+  align-self: start;
+  order: 2;
+  display: grid;
+  gap: 10px;
+  padding-left: 22px;
+  border-left: 1px solid var(--rusd-line);
+}
+
+.pillar-doc-toc p {
+  margin: 0 0 2px;
+  color: var(--rusd-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pillar-doc-toc a {
+  color: var(--rusd-muted);
+  font-size: 13px;
+  line-height: 1.4;
+  text-decoration: none;
+  text-wrap: pretty;
+}
+
+.pillar-doc-toc a:hover {
+  color: var(--rusd-ink);
+}
+
+/* ------------------------------------------------------------------- prose */
+
+.blog-prose {
+  max-width: 68ch;
+  color: var(--rusd-ink);
+  font-size: 17px;
+  line-height: 1.72;
+}
+
+/* Rhythm is owned by the flow, not by element resets.
+   `.blog-prose p { margin: 0 }` would be specificity (0,1,1) and would beat the
+   sibling rule at (0,1,0) no matter which came later — the universal selector
+   contributes nothing — so both rules are written at the same specificity. */
+.blog-prose > *,
+.blog-prose section > * {
+  margin-block: 0;
+}
+
+.blog-prose > * + *,
+.blog-prose section > * + * {
+  margin-top: 1.35em;
+}
+
+.blog-prose p {
+  text-wrap: pretty;
+}
+
+.blog-prose section {
+  scroll-margin-top: 96px;
+}
+
+.blog-prose section + section {
+  margin-top: 3.2em;
+}
+
+.blog-prose section > h2:first-child {
+  margin-top: 0;
+}
+
+.blog-prose h2 {
+  max-width: 26ch;
+  margin-bottom: 0.75em;
+  color: var(--rusd-ink);
+  font-family: var(--rusd-display);
+  font-size: clamp(24px, 2.6vw, 31px);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1.16;
+}
+
+.blog-prose h3 {
+  margin-top: 2em;
+  margin-bottom: 0.6em;
+  color: var(--rusd-ink);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+}
+
+/* A numbered document (the whitepaper) counts its own sections. */
+.blog-prose[data-numbered="true"] {
+  counter-reset: pillar-section;
+}
+
+.blog-prose[data-numbered="true"] section {
+  counter-increment: pillar-section;
+}
+
+.blog-prose[data-numbered="true"] h2::before {
+  display: block;
+  margin-bottom: 0.35em;
+  color: var(--rusd-primary);
+  font-family: var(--rusd-sans, inherit);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  content: counter(pillar-section, decimal-leading-zero);
+}
+
+.blog-prose a {
+  color: var(--rusd-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rusd-control, #d6d3d1);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.16s ease-out;
+}
+
+.blog-prose a:hover {
+  text-decoration-color: var(--rusd-ink);
+}
+
+.blog-prose strong {
+  font-weight: 680;
+}
+
+.blog-prose code {
+  padding: 1px 5px;
+  background: var(--rusd-soft);
+  border-radius: 5px;
+  font-size: 0.88em;
+  font-variant-ligatures: none;
+}
+
+.blog-prose ul,
+.blog-prose ol {
+  margin: 0;
+  padding-left: 1.3em;
+}
+
+.blog-prose li + li {
+  margin-top: 0.5em;
+}
+
+/* The lede paragraph of an article, set larger to open the page. */
+.blog-prose .pillar-first {
+  color: var(--rusd-ink);
+  font-size: 1.13em;
+  line-height: 1.6;
+}
+
+/* A pulled-out consequence or limit. Used sparingly. */
+.pillar-note {
+  margin: 0;
+  padding: 20px 24px;
+  background: var(--rusd-soft);
+  border-left: 3px solid var(--rusd-primary);
+  border-radius: 0 10px 10px 0;
+  color: var(--rusd-ink);
+  font-size: 15.5px;
+  line-height: 1.62;
+}
+
+/* Parameter / definition tables. */
+.pillar-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pillar-table th {
+  padding: 9px 14px 9px 0;
+  border-bottom: 1px solid var(--rusd-line);
+  color: var(--rusd-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.pillar-table td {
+  padding: 11px 14px 11px 0;
+  border-bottom: 1px solid var(--rusd-line);
+  vertical-align: top;
+}
+
+.pillar-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.pillar-table-wrap {
+  overflow-x: auto;
+}
+
+/* ---------------------------------------------------------------- blog index */
+
+.blog-index-heading {
+  display: grid;
+  gap: 16px;
+  padding: 26px 0 34px;
+  border-bottom: 1px solid var(--rusd-line);
+}
+
+.blog-index-heading h1 {
+  margin: 0;
+  font-size: clamp(40px, 5vw, 64px);
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+}
+
+.blog-archive {
+  display: grid;
+  gap: 0;
+  padding-top: 8px;
+}
+
+.blog-archive article {
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr);
+  gap: 28px;
+  padding: 30px 0;
+  border-bottom: 1px solid var(--rusd-line);
+}
+
+.blog-archive time {
+  color: var(--rusd-muted);
+  font-size: 12.5px;
+  letter-spacing: 0.01em;
+  padding-top: 6px;
+}
+
+.blog-archive h2 {
+  max-width: 24ch;
+  margin: 0 0 10px;
+  font-size: clamp(21px, 2.4vw, 27px);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.blog-archive h2 a {
+  color: var(--rusd-ink);
+  text-decoration: none;
+}
+
+.blog-archive h2 a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--rusd-control, #d6d3d1);
+  text-underline-offset: 4px;
+}
+
+.blog-archive p {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--rusd-muted);
+  font-size: 15px;
+  line-height: 1.62;
+  text-wrap: pretty;
+}
+
+/* ------------------------------------------------------------ article header */
+
+.blog-article-heading {
+  display: grid;
+  gap: 18px;
+  padding: 34px 0 30px;
+}
+
+.blog-article-heading h1 {
+  max-width: 17ch;
+  margin: 0;
+  font-size: clamp(38px, 5vw, 62px);
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.blog-article-rule {
+  height: 1px;
+  margin-bottom: 38px;
+  background: var(--rusd-line);
+}
+
+/* --------------------------------------------------------------- page footer */
+
+.pillar-doc-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 64px;
+  padding-top: 26px;
+  border-top: 1px solid var(--rusd-line);
+  color: var(--rusd-muted);
+  font-size: 12.5px;
+}
+
+.pillar-doc-next {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+
+/* -------------------------------------------------------------------- narrow */
+
+@media (max-width: 900px) {
+  .pillar-doc-body[data-toc="true"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pillar-doc-toc {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .blog-archive article {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .blog-archive time {
+    padding-top: 0;
+  }
+
+  .blog-prose {
+    font-size: 16.5px;
+  }
+}

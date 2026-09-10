@@ -27,6 +27,21 @@ Yang tersisa murni menunggu alamat/keputusan dari luar — tidak ada lagi kode m
 5. Ilustrasi hero = line-art SVG, bukan engraving foto seperti Turret.
 6. Audit sebelum mainnet.
 
+## Halaman panjang & whitepaper ✅ (10 Sep 2026)
+Halaman prose sebelumnya melayang tanpa header/footer, hierarki judul rata (h1 seukuran h2), serif display tidak kepakai, dan teks menempel di tepi kiri. Sekarang semuanya duduk di dalam situs dan memakai bahasa desain landing.
+
+- `src/styles/prose.css` — stylesheet long-form baru di atas token `--rusd-*` yang sama. Mengisi kelas `blog-index-heading` / `blog-article-heading` / `blog-feature` / `blog-archive` / `blog-prose` yang sudah dicadangkan di `pillar.css` tapi belum pernah punya layout.
+- `ProsePage` sekarang membawa `Banner` + `Header` + `Footer`, punya eyebrow, lede, baris meta, rail daftar isi sticky, dan footer navigasi.
+- **`/whitepaper` baru** — 10 bagian bernomor (abstract → status), tabel parameter risiko, dan callout. Isinya mendeskripsikan perilaku kontrak yang benar-benar ter-deploy, bukan roadmap.
+- `/blog` jadi arsip dua kolom (tanggal · judul+kutipan); halaman artikel punya judul serif besar, tanggal, dan estimasi waktu baca.
+- `/docs` dan `/risk` dapat daftar isi sticky; `/terms` dan `/privacy` ikut shell yang sama.
+
+Dua bug CSS yang ketemu lewat screenshot dan diperbaiki:
+1. Jarak antar-paragraf hilang. `.blog-prose p { margin: 0 }` punya specificity (0,1,1) dan mengalahkan `.blog-prose > * + *` di (0,1,0) — universal selector tidak menyumbang specificity, jadi urutan tidak menolong. Kedua aturan sekarang ditulis pada specificity yang sama.
+2. Judul artikel membungkus jadi 7 baris karena `max-width: 22ch` terpasang di seluruh header, bukan di `h1`-nya.
+
+Link inline di dalam prose tidak lagi memakai `rusd-text-link` (13px bold) sehingga terbaca sebagai teks biasa.
+
 ## Bebas mock ✅ (10 Sep 2026)
 `contracts/src/` sekarang **tidak berisi satu pun mock**. Semua mock pindah ke `contracts/test/mocks/` dan tidak bisa ikut ter-deploy oleh script produksi.
 

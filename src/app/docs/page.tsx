@@ -7,14 +7,26 @@ export const metadata = {
     "How Pillar works: deposit tokenized stock as collateral, borrow USDG, and let the yield the collateral produces repay the debt.",
 };
 
+const TOC = [
+  { id: "the-loop", heading: "The loop" },
+  { id: "what-it-costs", heading: "What it costs" },
+  { id: "worked-example", heading: "A worked example" },
+  { id: "ltv-limits", heading: "Loan-to-value limits" },
+  { id: "stale-prices", heading: "When prices go stale" },
+  { id: "liquidation", heading: "Liquidation" },
+  { id: "using-the-app", heading: "Using the app" },
+];
+
 export default function Page() {
   return (
     <ProsePage
+      eyebrow="Documentation"
       title="How Pillar works"
-      intro="Deposit tokenized stock, borrow USDG against it, and the yield your collateral produces pays the debt down. No schedule, no interest."
-      updated="10 September 2026"
+      lede="Deposit tokenized stock, borrow USDG against it, and the yield your collateral produces pays the debt down. No schedule, no interest."
+      meta={["Updated 10 September 2026", "~6 min read"]}
+      toc={TOC}
     >
-      <Section heading="The loop">
+      <Section id="the-loop" heading="The loop">
         <p>
           You deposit a tokenized equity. It becomes collateral and is immediately forwarded to a yield source
           rather than sitting inert in a vault. You borrow USDG against it, up to that market&apos;s maximum
@@ -28,7 +40,7 @@ export default function Page() {
         </p>
       </Section>
 
-      <Section heading="What it costs">
+      <Section id="what-it-costs" heading="What it costs">
         <p>
           Pillar charges no interest on the loan. There is no repayment schedule and no maturity date, because
           nothing accrues against you. The protocol&apos;s only revenue is a 10% share of the yield your collateral
@@ -37,7 +49,7 @@ export default function Page() {
         </p>
       </Section>
 
-      <Section heading="A worked example">
+      <Section id="worked-example" heading="A worked example">
         <p>
           Say you hold 10,000 USDG worth of tokenized Apple. Apple&apos;s market carries a maximum loan-to-value of
           40%, so that position supports a 4,000 USDG borrow while the collateral stays yours the whole time.
@@ -50,16 +62,16 @@ export default function Page() {
         </p>
       </Section>
 
-      <Section heading="Loan-to-value limits">
+      <Section id="ltv-limits" heading="Loan-to-value limits">
         <p>
           Apple and Microsoft borrow at a maximum 40% loan-to-value, Nvidia at 35%, Tesla at 30%, and a broad market
           ETF at 50% because it is a basket rather than a single company. These are deliberately unexciting: equity
           markets close while your loan stays live, and a stock can gap on Monday with no window to trade out of the
-          way. The full reasoning is on the <Link className="rusd-text-link" href="/risk">risk page</Link>.
+          way. The full reasoning is on the <Link href="/risk">risk page</Link>.
         </p>
       </Section>
 
-      <Section heading="When prices go stale">
+      <Section id="stale-prices" heading="When prices go stale">
         <p>
           If a price feed goes stale, Pillar blocks new borrows and collateral withdrawals — precisely the actions
           that could exploit a wrong number. It never blocks repayment, deposits, or the harvest, because those only
@@ -67,7 +79,7 @@ export default function Page() {
         </p>
       </Section>
 
-      <Section heading="Liquidation">
+      <Section id="liquidation" heading="Liquidation">
         <p>
           Positions are overcollateralised and can be liquidated. Liquidation is partial by construction: the
           contract computes the smallest repayment that restores your position to health and reverts anything
@@ -76,16 +88,16 @@ export default function Page() {
         </p>
       </Section>
 
-      <Section heading="Using the app">
+      <Section id="using-the-app" heading="Using the app">
         <p>
-          The <Link className="rusd-text-link" href="/app">portfolio page</Link> shows your loan-to-value, remaining
+          The <Link href="/app">portfolio page</Link> shows your loan-to-value, remaining
           debt, how much yield has already gone toward it, the estimated time until it reaches zero, and how far the
           price would have to fall before liquidation. Each market page — <code>/app/AAPL</code>, for example —
           handles deposit, borrow, repay, withdraw, and harvest for that asset.
         </p>
         <p>
           Connect any injected wallet. There is no account and no signup; see the{" "}
-          <Link className="rusd-text-link" href="/privacy">privacy page</Link> for what the site does and does not
+          <Link href="/privacy">privacy page</Link> for what the site does and does not
           see.
         </p>
       </Section>
