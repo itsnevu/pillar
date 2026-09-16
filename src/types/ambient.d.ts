@@ -153,6 +153,7 @@ declare module "viem" {
   export const parseUnits: (val: string, decimals: number) => bigint;
   export const formatUnits: (val: bigint, decimals: number) => string;
   export const defineChain: (chain: any) => any;
+  export const zeroAddress: Address;
 }
 
 declare module "wagmi" {

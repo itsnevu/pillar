@@ -378,7 +378,7 @@ export function MarketView({ symbol }: { symbol: string }) {
                   type="text"
                   placeholder="https://github.com/... or Figma link"
                   value={submissionNote}
-                  onChange={(e) => setSubmissionNote(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSubmissionNote(e.target.value)}
                   className={`w-full mb-3 ${inputClass}`}
                 />
                 <div className="flex gap-2 justify-end">
@@ -406,7 +406,7 @@ export function MarketView({ symbol }: { symbol: string }) {
                   type="text"
                   placeholder="Deliverable does not match the agreed scope because…"
                   value={disputeReason}
-                  onChange={(e) => setDisputeReason(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDisputeReason(e.target.value)}
                   className={`w-full mb-3 ${inputClass}`}
                 />
                 <p className="text-[12px] text-muted mb-3">
@@ -451,7 +451,7 @@ export function MarketView({ symbol }: { symbol: string }) {
                     max={100}
                     step={1}
                     value={vendorShare}
-                    onChange={(e) => setVendorShare(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setVendorShare(e.target.value)}
                     className={`w-28 ${inputClass}`}
                   />
                   <span className="text-[12px] text-muted">
