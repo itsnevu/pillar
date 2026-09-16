@@ -165,6 +165,7 @@ declare module "wagmi" {
   export const useDisconnect: () => { disconnect: () => void };
   export const useSwitchChain: () => { switchChain: (opts: any) => void };
   export const useConfig: () => any;
+  export const usePublicClient: () => any;
   export const useReadContract: (opts: any) => any;
   export const useReadContracts: (opts: any) => any;
   export const useWriteContract: () => {

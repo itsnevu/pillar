@@ -28,3 +28,9 @@ export function explorerAddress(explorerUrl: string | undefined, address: string
   if (!explorerUrl || explorerUrl.includes("TODO")) return undefined;
   return `${explorerUrl.replace(/\/$/, "")}/address/${address}`;
 }
+
+/** Block explorer link for a transaction hash. */
+export function explorerTx(explorerUrl: string | undefined, hash: string): string | undefined {
+  if (!explorerUrl || explorerUrl.includes("TODO")) return undefined;
+  return `${explorerUrl.replace(/\/$/, "")}/tx/${hash}`;
+}

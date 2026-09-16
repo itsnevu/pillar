@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAccount } from "wagmi";
 import { isAddress, parseUnits, zeroAddress, type Address } from "viem";
 import { AppShell, Stat } from "@/components/app/AppShell";
+import { AddressLink, ProofLink } from "@/components/app/Explorer";
 import { usePacts, usePactMutations, useMounted } from "@/lib/hooks";
 import {
   fmtUsdc,
@@ -291,10 +292,10 @@ function PactDashboard() {
 
                       <div className="mt-3 flex flex-wrap gap-4 text-[12px] text-muted">
                         <span>
-                          Client: <strong className="text-ink font-mono">{truncateAddress(p.client)}</strong>
+                          Client: <AddressLink address={p.client} className="font-semibold" />
                         </span>
                         <span>
-                          Contractor: <strong className="text-ink font-mono">{truncateAddress(p.vendor)}</strong>
+                          Contractor: <AddressLink address={p.vendor} className="font-semibold" />
                         </span>
                         <span>
                           Deadline: <strong className="text-ink">{fmtDate(p.deadline)}</strong>
@@ -307,14 +308,7 @@ function PactDashboard() {
                       {p.submissionNote && (
                         <div className="mt-3 p-3 rounded-[6px] bg-soft border border-line text-[12.5px]">
                           <span className="font-semibold text-ink">Deliverable Submission: </span>
-                          <a
-                            href={p.submissionNote.startsWith("http") ? p.submissionNote : "#"}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 underline break-all"
-                          >
-                            {p.submissionNote}
-                          </a>
+                          <ProofLink note={p.submissionNote} />
                         </div>
                       )}
                     </div>

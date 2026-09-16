@@ -41,6 +41,7 @@ type Deployment = {
   deployer: Address;
   usdc?: Address;
   pyrisPact?: Address;
+  deployBlock?: number;
 } | null;
 
 export const DEPLOYMENT = deployment as unknown as Deployment;
@@ -50,6 +51,9 @@ export const addresses = {
   pyrisPact: DEPLOYMENT?.pyrisPact ?? ("0xb5f905f48321F44e379d8680e947dDd05830AF62" as Address),
   usdc: DEPLOYMENT?.usdc ?? ("0x0000000000000000000000000000000000000000" as Address),
 } as const;
+
+/** First block to scan for PyrisPact events; nothing exists before deployment. */
+export const DEPLOY_BLOCK = BigInt(DEPLOYMENT?.deployBlock ?? 0);
 
 /**
  * The contract is deployed in native mode (usdcToken = address(0)), so amounts

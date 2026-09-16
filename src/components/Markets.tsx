@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePacts, useMounted } from "@/lib/hooks";
-import { fmtUsdc, truncateAddress, fmtDate, pactStatusMeta } from "@/lib/contracts";
+import { fmtUsdc, fmtDate, pactStatusMeta, addresses } from "@/lib/contracts";
+import { AddressLink, ProofLink } from "@/components/app/Explorer";
 
 export function Markets() {
   const { pacts, stats, isLoading, isError } = usePacts();
@@ -23,7 +24,8 @@ export function Markets() {
 
         <table className="rusd-market-table">
           <caption className="borrow-table-caption">
-            {settling ? "Reading pacts from Arc" : `${stats.totalCount} registered pacts`} · Instant sub-second settlement on Arc Chain
+            {settling ? "Reading pacts from Arc" : `${stats.totalCount} registered pact${stats.totalCount === 1 ? "" : "s"}`}
+            {" · "}read live from contract <AddressLink address={addresses.pyrisPact} /> on Arc
           </caption>
           <thead>
             <tr>
@@ -53,7 +55,7 @@ export function Markets() {
                     <div className="borrow-table-identity">
                       <strong>{p.title}</strong>
                       <span style={{ fontSize: "13px", color: "var(--rusd-muted, #78716c)" }}>
-                        Client: {truncateAddress(p.client)} → Contractor: {truncateAddress(p.vendor)}
+                        Client: <AddressLink address={p.client} /> → Contractor: <AddressLink address={p.vendor} />
                       </span>
                     </div>
                     <div className="borrow-directory-value">
@@ -62,12 +64,18 @@ export function Markets() {
                     </div>
                     {p.submissionNote && (
                       <div className="borrow-directory-value">
-                        <span>Proof</span>
+                        <span>Deliverable</span>
                         <span style={{ maxWidth: "240px", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {p.submissionNote}
+                          <ProofLink note={p.submissionNote} />
                         </span>
                       </div>
                     )}
+                    <div className="borrow-directory-value">
+                      <span>Onchain proof</span>
+                      <span>
+                        <Link href={`/app/${p.id.toString()}`}>view every transaction →</Link>
+                      </span>
+                    </div>
                   </td>
                   <td>
                     <div style={{ fontSize: "16px", fontWeight: 600 }}>

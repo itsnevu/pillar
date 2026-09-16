@@ -5,6 +5,8 @@ import { useState } from "react";
 import { useAccount } from "wagmi";
 import { zeroAddress } from "viem";
 import { AppShell } from "@/components/app/AppShell";
+import { AddressLink, ProofLink } from "@/components/app/Explorer";
+import { PactTimeline } from "@/components/app/PactTimeline";
 import { usePacts, usePactMutations, useProposal, usePendingWithdrawal } from "@/lib/hooks";
 import {
   addresses,
@@ -261,16 +263,20 @@ export function MarketView({ symbol }: { symbol: string }) {
             </div>
             <div className="flex justify-between">
               <dt className="text-muted">Client (Funder)</dt>
-              <dd className="font-mono text-ink">{truncateAddress(pact.client)}</dd>
+              <dd>
+                <AddressLink address={pact.client} />
+              </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-muted">Contractor (Payee)</dt>
-              <dd className="font-mono text-ink">{truncateAddress(pact.vendor)}</dd>
+              <dd>
+                <AddressLink address={pact.vendor} />
+              </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-muted">Arbiter</dt>
-              <dd className="font-mono text-ink">
-                {hasArbiter ? truncateAddress(pact.arbiter) : <span className="text-muted">None · mutual settlement</span>}
+              <dd>
+                {hasArbiter ? <AddressLink address={pact.arbiter} /> : <span className="text-muted">None · mutual settlement</span>}
               </dd>
             </div>
             <div className="flex justify-between">
@@ -300,16 +306,10 @@ export function MarketView({ symbol }: { symbol: string }) {
           {pact.submissionNote && (
             <div className="mt-5 p-3 rounded-[8px] bg-soft border border-line text-[12.5px]">
               <div className="font-semibold text-ink mb-1">Delivered Proof of Work:</div>
-              <a
-                href={pact.submissionNote.startsWith("http") ? pact.submissionNote : "#"}
-                target="_blank"
-                rel="noreferrer"
-                className="text-blue-600 underline break-all font-mono"
-              >
-                {pact.submissionNote}
-              </a>
+              <ProofLink note={pact.submissionNote} className="font-mono" />
             </div>
           )}
+
         </div>
 
         <div className="space-y-6">
@@ -491,12 +491,26 @@ export function MarketView({ symbol }: { symbol: string }) {
                 Gas Currency: <strong>Native USDC</strong>
               </div>
               <div>
-                PyrisPact Contract:{" "}
-                <code className="font-mono text-ink">{truncateAddress(addresses.pyrisPact)}</code>
+                PyrisPact Contract: <AddressLink address={addresses.pyrisPact} />
+              </div>
+              <div>
+                Source:{" "}
+                <a
+                  href={`https://sourcify.dev/server/v2/contract/5042/${addresses.pyrisPact}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline decoration-dotted underline-offset-2 hover:text-blue-700"
+                >
+                  verified on Sourcify ↗
+                </a>
               </div>
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="mt-6">
+        <PactTimeline pactId={pact.id} />
       </section>
     </AppShell>
   );

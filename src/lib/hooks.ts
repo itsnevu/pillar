@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useSyncExternalStore } from "react";
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useReadContract, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
 import { zeroAddress, type Address } from "viem";
-import { PyrisPactAbi, addresses, type Pact, PactStatus } from "./contracts";
+import { PyrisPactAbi, addresses, DEPLOY_BLOCK, type Pact, PactStatus } from "./contracts";
 
 const noop = () => () => {};
 /** true after hydration, false during SSR */
@@ -12,6 +12,132 @@ export function useMounted() {
 }
 
 const pactAddress = addresses.pyrisPact as Address;
+
+// ------------------------------------------------------------ onchain history
+
+export type PactEventKind =
+  | "PactCreated"
+  | "DeadlineExtended"
+  | "WorkSubmitted"
+  | "PactReleased"
+  | "PactRefunded"
+  | "PactDisputed"
+  | "ResolutionProposed"
+  | "PactResolved";
+
+/** One state transition of a pact, as proven by an event log on Arc. */
+export type PactEvent = {
+  kind: PactEventKind;
+  txHash: `0x${string}`;
+  blockNumber: bigint;
+  timestamp: number; // unix seconds
+  actor?: Address;
+  /** Human detail pulled from the event args (note, reason, split, amounts). */
+  detail?: string;
+};
+
+const HISTORY_EVENTS: PactEventKind[] = [
+  "PactCreated",
+  "DeadlineExtended",
+  "WorkSubmitted",
+  "PactReleased",
+  "PactRefunded",
+  "PactDisputed",
+  "ResolutionProposed",
+  "PactResolved",
+];
+
+function describe(kind: PactEventKind, a: Record<string, unknown>): { actor?: Address; detail?: string } {
+  const bps = (v: unknown) => `${Number(v) / 100}%`;
+  switch (kind) {
+    case "PactCreated":
+      return { actor: a.client as Address, detail: `Escrow funded for "${a.title}"` };
+    case "DeadlineExtended":
+      return { detail: `Deadline moved to ${new Date(Number(a.newDeadline) * 1000).toLocaleDateString("en-US")}` };
+    case "WorkSubmitted":
+      return { detail: String(a.submissionNote ?? "") };
+    case "PactReleased":
+      return { actor: a.vendor as Address, detail: "Full amount paid to contractor" };
+    case "PactRefunded":
+      return { actor: a.client as Address, detail: "Full amount returned to client" };
+    case "PactDisputed":
+      return { actor: a.initiator as Address, detail: String(a.reason ?? "") };
+    case "ResolutionProposed":
+      return { actor: a.proposer as Address, detail: `Proposed ${bps(a.vendorShareBps)} to contractor` };
+    case "PactResolved":
+      return { actor: a.resolver as Address, detail: `Settled: ${bps(a.vendorShareBps)} to contractor` };
+  }
+}
+
+/**
+ * Every event the contract emitted for one pact, oldest first, each with the
+ * transaction hash that proves it. Read straight from Arc logs; nothing is
+ * stored off-chain.
+ */
+export function usePactHistory(pactId: bigint | undefined) {
+  const client = usePublicClient();
+  const [events, setEvents] = useState<PactEvent[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    if (!client || pactId === undefined || !pactAddress) return;
+    let cancelled = false;
+    setIsLoading(true);
+    setIsError(false);
+
+    (async () => {
+      try {
+        const logsPerKind = await Promise.all(
+          HISTORY_EVENTS.map((eventName) =>
+            client.getContractEvents({
+              address: pactAddress,
+              abi: PyrisPactAbi,
+              eventName,
+              args: { pactId },
+              fromBlock: DEPLOY_BLOCK,
+              toBlock: "latest",
+            })
+          )
+        );
+        const logs = logsPerKind.flat() as Array<{
+          eventName: PactEventKind;
+          args: Record<string, unknown>;
+          transactionHash: `0x${string}`;
+          blockNumber: bigint;
+          logIndex: number;
+        }>;
+
+        const blockNumbers = Array.from(new Set(logs.map((l) => l.blockNumber)));
+        const blocks = await Promise.all(blockNumbers.map((n) => client.getBlock({ blockNumber: n })));
+        const tsByBlock = new Map(blockNumbers.map((n, i) => [n, Number(blocks[i].timestamp)]));
+
+        const out: PactEvent[] = logs
+          .sort((x, y) => (x.blockNumber === y.blockNumber ? x.logIndex - y.logIndex : x.blockNumber < y.blockNumber ? -1 : 1))
+          .map((l) => ({
+            kind: l.eventName,
+            txHash: l.transactionHash,
+            blockNumber: l.blockNumber,
+            timestamp: tsByBlock.get(l.blockNumber) ?? 0,
+            ...describe(l.eventName, l.args),
+          }));
+        if (!cancelled) setEvents(out);
+      } catch (e) {
+        console.error("pact history", e);
+        if (!cancelled) setIsError(true);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [client, pactId, tick]);
+
+  return { events, isLoading, isError, refetch: () => setTick((t) => t + 1) };
+}
 
 /**
  * Hook to retrieve all pacts, filtered by client/vendor role
