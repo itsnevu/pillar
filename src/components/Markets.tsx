@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePacts } from "@/lib/hooks";
+import { usePacts, useMounted } from "@/lib/hooks";
 import { fmtUsdc, truncateAddress, fmtDate, pactStatusMeta } from "@/lib/contracts";
 
 export function Markets() {
-  const { pacts, stats } = usePacts();
+  const { pacts, stats, isLoading, isError } = usePacts();
+  const mounted = useMounted();
+  const settling = !mounted || isLoading;
 
   return (
     <div id="pacts" style={{ marginTop: "24px" }}>
@@ -14,13 +16,14 @@ export function Markets() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "12px" }}>
           <h2>Live Escrow Milestones</h2>
           <span style={{ fontSize: "14px", color: "var(--rusd-muted, #78716c)" }}>
-            Total Value Locked: <strong>${fmtUsdc(stats.totalEscrowVolume)} USDC</strong>
+            Currently in escrow: <strong>${fmtUsdc(stats.activeEscrowAmount)} USDC</strong> · Settled:{" "}
+            <strong>${fmtUsdc(stats.completedPayouts)} USDC</strong>
           </span>
         </div>
 
         <table className="rusd-market-table">
           <caption className="borrow-table-caption">
-            {stats.totalCount} registered pacts · Instant sub-second settlement on Arc Chain
+            {settling ? "Reading pacts from Arc" : `${stats.totalCount} registered pacts`} · Instant sub-second settlement on Arc Chain
           </caption>
           <thead>
             <tr>
@@ -34,7 +37,11 @@ export function Markets() {
             {pacts.length === 0 && (
               <tr>
                 <td colSpan={4} style={{ textAlign: "center", padding: "32px 16px", color: "var(--rusd-muted, #78716c)" }}>
-                  No pacts have been created onchain yet. Open the app to fund the first one.
+                  {settling
+                    ? "Reading pacts from Arc…"
+                    : isError
+                      ? "Could not reach the Arc RPC. Refresh to try again."
+                      : "No pacts have been created onchain yet. Open the app to fund the first one."}
                 </td>
               </tr>
             )}

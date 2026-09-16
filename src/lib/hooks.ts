@@ -57,7 +57,7 @@ export function usePacts(userAddress?: Address) {
       if (p.status === PactStatus.FUNDED || p.status === PactStatus.SUBMITTED) {
         activeEscrowAmount += p.amount;
         activeCount++;
-      } else if (p.status === PactStatus.RELEASED) {
+      } else if (p.status === PactStatus.RELEASED || p.status === PactStatus.RESOLVED) {
         completedPayouts += p.amount;
         completedCount++;
       }
