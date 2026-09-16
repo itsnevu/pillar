@@ -19,8 +19,8 @@ export type Post = {
 const SOURCES: { slug: string; date: string; file: string }[] = [
   { slug: "the-end-of-the-twenty-percent-freelance-platform-tax", date: "2026-09-16", file: "ARTICLE.md" },
   { slug: "why-b2b-commerce-demands-native-usdc-gas", date: "2026-09-16", file: "ARTICLE-USDC-GAS.md" },
-  { slug: "what-trustless-milestone-escrow-can-and-cannot-do", date: "2026-09-16", file: "ARTICLE-LIMITS.md" },
-  { slug: "instant-sub-second-settlement-vs-the-five-day-wire", date: "2026-09-16", file: "ARTICLE-ORACLE.md" },
+  { slug: "what-trustless-milestone-escrow-can-and-cannot-do", date: "2026-09-12", file: "ARTICLE-LIMITS.md" },
+  { slug: "instant-sub-second-settlement-vs-the-five-day-wire", date: "2026-09-10", file: "ARTICLE-ORACLE.md" },
 ];
 
 function read(source: (typeof SOURCES)[number]): Post {
