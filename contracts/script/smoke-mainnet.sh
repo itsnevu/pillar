@@ -13,12 +13,13 @@ RPC=${RPC:-https://rpc.mainnet.arc.io}
 PACT=$(python -c "import json;print(json.load(open('deployments/5042.json'))['pyrisPact'])")
 : "${CLIENT_KEY:?set CLIENT_KEY=0x... (a funded Arc wallet)}"
 
-status() { python -c "import json,sys;d=json.load(sys.stdin);print(d['status'], d['transactionHash'])"; }
+# Newer cast wraps JSON as {"data": ...}; older prints the value directly.
+unwrap="import json,sys;d=json.load(sys.stdin);d=d.get('data',d) if isinstance(d,dict) else d;d=d[0] if isinstance(d,list) else d"
+status() { python -c "$unwrap;print(d['status'], d['transactionHash'])"; }
 
 VENDOR_JSON=$(cast wallet new --json)
-# `cast wallet new --json` returns a list on some versions and an object on others.
-VENDOR=$(echo "$VENDOR_JSON" | python -c "import json,sys;d=json.load(sys.stdin);d=d[0] if isinstance(d,list) else d;print(d['address'])")
-VENDOR_KEY=$(echo "$VENDOR_JSON" | python -c "import json,sys;d=json.load(sys.stdin);d=d[0] if isinstance(d,list) else d;print(d['private_key'])")
+VENDOR=$(echo "$VENDOR_JSON" | python -c "$unwrap;print(d['address'])")
+VENDOR_KEY=$(echo "$VENDOR_JSON" | python -c "$unwrap;print(d['private_key'])")
 echo "contract : $PACT"
 echo "vendor   : $VENDOR (throwaway)"
 
