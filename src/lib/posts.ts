@@ -14,26 +14,24 @@ export type Post = {
 
 /**
  * Posts live as plain-prose Markdown under `docs/`: first non-empty line is the
- * title, every other non-empty line is a paragraph. No front matter, no parser.
+ * title, every other non-empty line is a paragraph.
  */
 const SOURCES: { slug: string; date: string; file: string }[] = [
-  { slug: "the-most-expensive-trade-you-ever-made-was-a-sale", date: "2026-09-10", file: "ARTICLE.md" },
-  { slug: "why-we-lend-so-little-against-your-apple", date: "2026-09-10", file: "ARTICLE-LTV.md" },
-  { slug: "what-a-self-repaying-loan-cannot-do", date: "2026-09-10", file: "ARTICLE-LIMITS.md" },
-  { slug: "an-oracle-should-refuse", date: "2026-09-10", file: "ARTICLE-ORACLE.md" },
+  { slug: "the-end-of-the-twenty-percent-freelance-platform-tax", date: "2026-09-16", file: "ARTICLE.md" },
+  { slug: "why-b2b-commerce-demands-native-usdc-gas", date: "2026-09-16", file: "ARTICLE-LTV.md" },
+  { slug: "what-trustless-milestone-escrow-can-and-cannot-do", date: "2026-09-16", file: "ARTICLE-LIMITS.md" },
+  { slug: "instant-sub-second-settlement-vs-the-five-day-wire", date: "2026-09-16", file: "ARTICLE-ORACLE.md" },
 ];
 
 function read(source: (typeof SOURCES)[number]): Post {
-  const raw = fs.readFileSync(path.join(process.cwd(), "docs", source.file), "utf8");
-  const lines = raw.trim().split("\n").map((l) => l.trim()).filter((l) => l.length > 0);
+  const raw = fs.readFileSync(path.join(process.cwd(), "docs", source.file), "utf8") as string;
+  const lines = raw.trim().split("\n").map((l: string) => l.trim()).filter((l: string) => l.length > 0);
   const [title, ...paragraphs] = lines;
   return { ...source, title, paragraphs, excerpt: paragraphs[0] ?? "" };
 }
 
 /**
- * Newest first. Posts published on the same day keep the order they are declared
- * in — the launch set all shares a date, and a stable sort is more useful there
- * than an arbitrary one.
+ * Newest first. Posts published on the same day keep the order they are declared in.
  */
 export function allPosts(): Post[] {
   return SOURCES.map(read)

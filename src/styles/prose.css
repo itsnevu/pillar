@@ -4,26 +4,26 @@
 
    The class names `blog-index-heading`, `blog-feature`, `blog-archive`,
    `blog-article-heading` and `blog-prose` are already reserved by the display
-   font rule in pillar.css; the layout for them lives here. */
+   font rule in pyris.css; the layout for them lives here. */
 
 /* An incised rule: the hairline plus a white highlight on the far side, the way
    a line cut into paper catches light. One custom property, applied wherever a
    separator carries weight, so the whole document rules the same way. */
-.pillar-rule-below {
+.pyris-rule-below {
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
-.pillar-rule-above {
+.pyris-rule-above {
   box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.92);
 }
 
 /* ---------------------------------------------------------------- page frame */
 
-.pillar-doc {
+.pyris-doc {
   padding: 8px 0 12px;
 }
 
-.pillar-doc-head {
+.pyris-doc-head {
   display: grid;
   gap: 18px;
   padding: 26px 0 34px;
@@ -31,7 +31,7 @@
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
-.pillar-doc-eyebrow {
+.pyris-doc-eyebrow {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -43,14 +43,14 @@
   text-transform: uppercase;
 }
 
-.pillar-doc-eyebrow::after {
+.pyris-doc-eyebrow::after {
   flex: 1;
   height: 1px;
   background: var(--rusd-line);
   content: "";
 }
 
-.pillar-doc-head h1 {
+.pyris-doc-head h1 {
   max-width: 20ch;
   margin: 0;
   color: var(--rusd-ink);
@@ -62,7 +62,7 @@
   text-wrap: balance;
 }
 
-.pillar-doc-lede {
+.pyris-doc-lede {
   max-width: 58ch;
   margin: 0;
   color: var(--rusd-muted);
@@ -71,7 +71,7 @@
   text-wrap: pretty;
 }
 
-.pillar-doc-meta {
+.pyris-doc-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 18px;
@@ -82,18 +82,18 @@
 
 /* ------------------------------------------------------- body + optional TOC */
 
-.pillar-doc-body {
+.pyris-doc-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 44px;
   padding-top: 40px;
 }
 
-.pillar-doc-body[data-toc="true"] {
+.pyris-doc-body[data-toc="true"] {
   grid-template-columns: minmax(0, 1fr) 208px;
 }
 
-.pillar-doc-toc {
+.pyris-doc-toc {
   position: sticky;
   top: 96px;
   align-self: start;
@@ -104,7 +104,7 @@
   border-left: 1px solid var(--rusd-line);
 }
 
-.pillar-doc-toc p {
+.pyris-doc-toc p {
   margin: 0 0 2px;
   color: var(--rusd-muted);
   font-size: 11px;
@@ -113,7 +113,7 @@
   text-transform: uppercase;
 }
 
-.pillar-doc-toc a {
+.pyris-doc-toc a {
   color: var(--rusd-muted);
   font-size: 13px;
   line-height: 1.4;
@@ -121,7 +121,7 @@
   text-wrap: pretty;
 }
 
-.pillar-doc-toc a:hover {
+.pyris-doc-toc a:hover {
   color: var(--rusd-ink);
 }
 
@@ -186,11 +186,11 @@
 
 /* A numbered document (the whitepaper) counts its own sections. */
 .blog-prose[data-numbered="true"] {
-  counter-reset: pillar-section;
+  counter-reset: pyris-section;
 }
 
 .blog-prose[data-numbered="true"] section {
-  counter-increment: pillar-section;
+  counter-increment: pyris-section;
 }
 
 .blog-prose[data-numbered="true"] h2::before {
@@ -201,7 +201,7 @@
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
-  content: counter(pillar-section, decimal-leading-zero);
+  content: counter(pyris-section, decimal-leading-zero);
 }
 
 .blog-prose a {
@@ -239,14 +239,14 @@
 }
 
 /* The lede paragraph of an article, set larger to open the page. */
-.blog-prose .pillar-first {
+.blog-prose .pyris-first {
   color: var(--rusd-ink);
   font-size: 1.13em;
   line-height: 1.6;
 }
 
 /* A pulled-out consequence or limit. Used sparingly. */
-.pillar-note {
+.pyris-note {
   margin: 0;
   padding: 20px 24px;
   background: var(--rusd-soft);
@@ -258,14 +258,14 @@
 }
 
 /* Parameter / definition tables. */
-.pillar-table {
+.pyris-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14.5px;
   font-variant-numeric: tabular-nums;
 }
 
-.pillar-table th {
+.pyris-table th {
   padding: 9px 14px 9px 0;
   border-bottom: 1px solid var(--rusd-line);
   color: var(--rusd-muted);
@@ -276,17 +276,17 @@
   text-transform: uppercase;
 }
 
-.pillar-table td {
+.pyris-table td {
   padding: 11px 14px 11px 0;
   border-bottom: 1px solid var(--rusd-line);
   vertical-align: top;
 }
 
-.pillar-table tr:last-child td {
+.pyris-table tr:last-child td {
   border-bottom: 0;
 }
 
-.pillar-table-wrap {
+.pyris-table-wrap {
   overflow-x: auto;
 }
 
@@ -386,7 +386,7 @@
 
 /* --------------------------------------------------------------- page footer */
 
-.pillar-doc-foot {
+.pyris-doc-foot {
   box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.92);
   display: flex;
   flex-wrap: wrap;
@@ -400,7 +400,7 @@
   font-size: 12.5px;
 }
 
-.pillar-doc-next {
+.pyris-doc-next {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 18px;
@@ -409,11 +409,11 @@
 /* -------------------------------------------------------------------- narrow */
 
 @media (max-width: 900px) {
-  .pillar-doc-body[data-toc="true"] {
+  .pyris-doc-body[data-toc="true"] {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .pillar-doc-toc {
+  .pyris-doc-toc {
     display: none;
   }
 }
@@ -443,7 +443,7 @@ article.blog-prose {
 
 /* The opening capital, set in the display face. Sized in `em` so it tracks the
    lede's own larger size, and given a transparent-ish counter-space by eye. */
-article.blog-prose .pillar-first::first-letter {
+article.blog-prose .pyris-first::first-letter {
   float: left;
   margin: 0.02em 0.08em 0 0;
   color: var(--rusd-ink);
@@ -455,7 +455,8 @@ article.blog-prose .pillar-first::first-letter {
 }
 
 @media (max-width: 640px) {
-  article.blog-prose .pillar-first::first-letter {
+  article.blog-prose .pyris-first::first-letter {
     font-size: 2.9em;
   }
 }
+

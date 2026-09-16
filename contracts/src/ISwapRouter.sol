@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 /// @title ISwapRouter
-/// @notice The one thing Pillar needs from a DEX: turn an exact amount of one
+/// @notice The one thing Pyris needs from a DEX: turn an exact amount of one
 ///         token into at least `minAmountOut` of another.
 /// @dev Deliberately narrower than any real router's surface. Aggregators such as
 ///      KyberSwap expose route-specific calldata that cannot be constructed

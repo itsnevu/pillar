@@ -11,20 +11,28 @@ const display = Libre_Caslon_Text({
   display: "swap",
 });
 
-const TITLE = "Pillar | Never sell. Never repay.";
+const TITLE = "Pyris Pact | Programmable B2B Payments on Arc Chain";
 const DESCRIPTION =
-  "Borrow USDG against your Robinhood Crypto tokenized stocks and let the yield repay the loan for you. Self-repaying credit on Robinhood Chain.";
+  "Lock USDC in trustless milestone escrow. Disburse upon approved deliverables. Native USDC gas fees, zero wire markups, and instant settlement on Arc Chain.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: TITLE, template: "%s" },
   description: DESCRIPTION,
-  applicationName: "Pillar Finance",
-  keywords: ["self-repaying loan", "tokenized stocks", "USDG", "Robinhood Chain", "collateral", "DeFi lending"],
+  applicationName: "Pyris Pact",
+  keywords: [
+    "B2B payments",
+    "programmable escrow",
+    "milestone payments",
+    "USDC",
+    "Arc Chain",
+    "freelancer payments",
+    "contractor escrow",
+  ],
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
-    siteName: "Pillar Finance",
+    siteName: "Pyris Pact",
     url: SITE_URL,
     title: TITLE,
     description: DESCRIPTION,

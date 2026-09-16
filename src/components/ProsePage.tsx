@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import "@/styles/pillar.css";
+import "@/styles/pyris.css";
 import "@/styles/prose.css";
 
 import { Banner, Header } from "@/components/Header";
@@ -42,13 +42,13 @@ export function ProsePage({
       <Banner />
       <div className="rusd-shell p2p-app-shell">
         <Header />
-        <main className="rusd-frame rusd-main pillar-doc">
-          <header className="pillar-doc-head">
-            {eyebrow && <p className="pillar-doc-eyebrow">{eyebrow}</p>}
+        <main className="rusd-frame rusd-main pyris-doc">
+          <header className="pyris-doc-head">
+            {eyebrow && <p className="pyris-doc-eyebrow">{eyebrow}</p>}
             <h1>{title}</h1>
-            {lede && <p className="pillar-doc-lede">{lede}</p>}
+            {lede && <p className="pyris-doc-lede">{lede}</p>}
             {meta && meta.length > 0 && (
-              <p className="pillar-doc-meta">
+              <p className="pyris-doc-meta">
                 {meta.map((m) => (
                   <span key={m}>{m}</span>
                 ))}
@@ -56,9 +56,9 @@ export function ProsePage({
             )}
           </header>
 
-          <div className="pillar-doc-body" data-toc={toc && toc.length > 0 ? "true" : "false"}>
+          <div className="pyris-doc-body" data-toc={toc && toc.length > 0 ? "true" : "false"}>
             {toc && toc.length > 0 && (
-              <nav className="pillar-doc-toc" aria-label="On this page">
+              <nav className="pyris-doc-toc" aria-label="On this page">
                 <p>On this page</p>
                 {toc.map((t) => (
                   <a key={t.id} href={`#${t.id}`}>
@@ -72,9 +72,9 @@ export function ProsePage({
             </div>
           </div>
 
-          <div className="pillar-doc-foot">
-            <span>{footNote ?? "Pillar is in open beta. Start with small amounts."}</span>
-            <span className="pillar-doc-next">
+          <div className="pyris-doc-foot">
+            <span>{footNote ?? "Pyris is in open beta. Start with small amounts."}</span>
+            <span className="pyris-doc-next">
               <Link className="rusd-text-link" href={LINKS.docs}>
                 Docs
               </Link>
@@ -108,5 +108,6 @@ export function Section({ id, heading, children }: { id?: string; heading: strin
 
 /** A pulled-out consequence or limit. Used sparingly, for the thing a reader must not miss. */
 export function Note({ children }: { children: ReactNode }) {
-  return <p className="pillar-note">{children}</p>;
+  return <p className="pyris-note">{children}</p>;
 }
+

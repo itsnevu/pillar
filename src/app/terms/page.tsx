@@ -1,16 +1,15 @@
 import { ProsePage, Section } from "@/components/ProsePage";
 
 export const metadata = {
-  title: "Terms — Pillar Finance",
+  title: "Terms — Pyris Pact",
   description:
-    "Pillar Finance is software, not a bank. The terms, the limits, and what you are responsible for.",
+    "Pyris Pact is non-custodial milestone escrow software on Arc Chain. The terms, parameters, and user responsibilities.",
 };
 
 const TOC = [
   { id: "what-this-is", heading: "What this is" },
   { id: "what-it-costs", heading: "What it costs" },
-  { id: "what-you-risk", heading: "What you risk" },
-  { id: "when-it-refuses", heading: "When it refuses to act" },
+  { id: "what-you-risk", heading: "Escrow and settlement risks" },
   { id: "your-responsibility", heading: "Your responsibility" },
 ];
 
@@ -18,63 +17,45 @@ export default function Page() {
   return (
     <ProsePage
       eyebrow="Legal"
-      title="Terms"
-      lede="Plain language, and the unflattering parts included. Nothing here is written to be skimmed past."
-      meta={["Updated 10 September 2026"]}
+      title="Terms of Use"
+      lede="Plain language, clear parameters. Pyris Pact is software that interacts directly with smart contracts on Arc Chain."
+      meta={["Updated 16 September 2026"]}
       toc={TOC}
     >
       <Section id="what-this-is" heading="What this is">
         <p>
-          Pillar Finance is software, not a bank and not a lender of record. It is provided as is, without
-          warranty, and responsibility for your own funds stays with you. There is no institution behind it
-          that can reverse a transaction, restore a lost key, or make you whole.
+          Pyris Pact is non-custodial software, not a bank, not an employer, and not an escrow agent of
+          record. It provides an interface to <code>PyrisPact.sol</code> deployed on Arc Chain. Responsibility
+          for verifying counterparty addresses and milestone deliverables resides entirely with the user.
         </p>
       </Section>
 
       <Section id="what-it-costs" heading="What it costs">
         <p>
-          Pillar charges no interest on a loan, no origination fee and no early-repayment fee. The protocol
-          takes a 10% share of the yield your collateral produces, and nothing else.
-        </p>
-        <p>
-          If that yield falls to zero, your debt stops shrinking. It never grows on its own, but it does not
-          disappear either.
+          Pyris Pact charges 0% platform fees during the open beta period. All transactions require standard
+          Arc Chain network gas fees, which are denominated and paid directly in USDC.
         </p>
       </Section>
 
-      <Section id="what-you-risk" heading="What you risk">
+      <Section id="what-you-risk" heading="Escrow and settlement risks">
         <p>
-          Loans are overcollateralised and can be liquidated. Liquidation is partial by construction: the
-          contract computes the smallest repayment that restores your position to health and rejects
-          anything larger. You can still lose part of your collateral.
+          Funds deposited into an escrow pact are held by the smart contract. Releasing funds to a
+          contractor is permanent and cannot be reversed by the protocol developers or any central entity.
+          Clients must review submitted deliverables before triggering <code>releaseFunds()</code>.
         </p>
         <p>
-          Collateral is tokenized equities and other assets whose underlying markets close. A price can gap
-          while those markets are shut and your loan is live. Loan-to-value limits are set conservatively for
-          that reason, but they do not remove the risk.
-        </p>
-        <p>
-          Pillar depends on systems it does not operate: the vault that produces yield, the price feed, the
-          venue that fills the conversion swap, and the issuers of the collateral tokens and of USDG. A
-          failure in any of them is a failure you experience.
-        </p>
-      </Section>
-
-      <Section id="when-it-refuses" heading="When it refuses to act">
-        <p>
-          New borrowing and collateral withdrawals are blocked whenever a price feed is stale. Repayment,
-          deposits and yield harvesting are never blocked, because those actions only make your position
-          safer.
+          In the event of a deadline expiry where deliverables were not submitted, the client may reclaim
+          their funds via the onchain <code>refund()</code> mechanism.
         </p>
       </Section>
 
       <Section id="your-responsibility" heading="Your responsibility">
         <p>
-          The protocol is in open beta and has not been audited. Nothing here is investment advice. You are
-          responsible for your own tax position and for whether any of this is lawful where you live.
+          You are responsible for safeguarding your private keys, evaluating your commercial counterparties,
+          and managing your own tax and regulatory obligations.
         </p>
         <p>
-          Questions: <a href="mailto:support@pillar.finance">support@pillar.finance</a>
+          Questions: <a href="mailto:support@pyris.tech">support@pyris.tech</a>
         </p>
       </Section>
     </ProsePage>

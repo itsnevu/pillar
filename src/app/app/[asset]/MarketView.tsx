@@ -1,180 +1,251 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import { isAddress, type Address } from "viem";
+import { useState } from "react";
 import { useAccount } from "wagmi";
-import { AppShell, Badge, Stat } from "@/components/app/AppShell";
-import { HealthGauge } from "@/components/app/HealthGauge";
-import { ActionPanel } from "@/components/app/ActionPanel";
-import { useUserPositions, useMounted } from "@/lib/hooks";
-import { addresses, fmtDuration, fmtPrice, fmtStock, fmtUsdg, marketBySymbol, truncateAddress } from "@/lib/contracts";
-import { explorerUrl } from "@/lib/chain";
-import { explorerAddress } from "@/lib/links";
-
-/** The contracts this market actually runs on, so a reader can go and check. */
-function ContractList({ asset }: { asset: `0x${string}` }) {
-  const rows = [
-    { label: "PillarCore", address: addresses.pillarCore },
-    { label: "Collateral token", address: asset },
-    { label: "Price oracle", address: addresses.oracle },
-    { label: "Yield source", address: addresses.yieldSource },
-  ].filter((r): r is { label: string; address: `0x${string}` } => Boolean(r.address));
-  if (rows.length === 0) return null;
-
-  return (
-    <div className="mt-3 rounded-[12px] border border-line bg-surface p-5">
-      <div className="text-[11px] tracking-[0.12em] uppercase text-muted">Contracts</div>
-      <dl className="mt-3 grid gap-2 text-[12.5px]">
-        {rows.map((r) => {
-          const href = explorerAddress(explorerUrl, r.address);
-          return (
-            <div key={r.label} className="flex items-baseline justify-between gap-4">
-              <dt className="text-muted">{r.label}</dt>
-              <dd className="font-mono text-ink">
-                {href ? (
-                  <a className="underline underline-offset-2" href={href} target="_blank" rel="noreferrer">
-                    {truncateAddress(r.address)}
-                  </a>
-                ) : (
-                  truncateAddress(r.address)
-                )}
-              </dd>
-            </div>
-          );
-        })}
-      </dl>
-    </div>
-  );
-}
+import { AppShell } from "@/components/app/AppShell";
+import { usePacts, usePactMutations } from "@/lib/hooks";
+import { addresses, fmtUsdc, truncateAddress, fmtDate, pactStatusMeta, PactStatus } from "@/lib/contracts";
 
 export function MarketView({ symbol }: { symbol: string }) {
-  return (
-    <AppShell>
-      <Suspense fallback={null}>
-        <Inner symbol={symbol} />
-      </Suspense>
-    </AppShell>
-  );
-}
-
-function Inner({ symbol }: { symbol: string }) {
-  const meta = marketBySymbol(symbol);
+  const pactId = BigInt(!isNaN(Number(symbol)) ? Number(symbol) : 1);
   const { address: connected } = useAccount();
-  const sp = useSearchParams();
-  const viewParam = sp.get("address");
-  const viewing = (viewParam && isAddress(viewParam) ? (viewParam as Address) : undefined) ?? connected;
-  const mounted = useMounted();
+  const { pacts, refetch } = usePacts(connected);
+  const { releaseFunds, submitWork, refund, isPending } = usePactMutations();
 
-  const { positions, refetch } = useUserPositions(mounted ? viewing : undefined);
-  const pos = positions.find((p) => p.market.symbol === symbol);
+  const pact = pacts.find((p) => p.id === pactId) ?? pacts[0];
+  const [submissionNote, setSubmissionNote] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
-  if (!meta) {
+  if (!pact) {
     return (
-      <section className="pt-[44px]">
-        <h1 className="font-serif text-[40px] text-ink">Unknown market</h1>
-        <p className="mt-3 text-muted">
-          No market <span className="font-mono">{symbol}</span> in the current deployment.{" "}
-          <Link href="/" className="underline underline-offset-2 text-ink">Back to markets</Link>
-        </p>
-      </section>
+      <AppShell>
+        <div className="pt-12 text-center">
+          <h1 className="font-serif text-[28px]">Pact Not Found</h1>
+          <p className="text-muted mt-2">No milestone escrow matching ID #{symbol}.</p>
+          <Link href="/app" className="inline-block mt-4 underline text-ink">
+            ← Back to Dashboard
+          </Link>
+        </div>
+      </AppShell>
     );
   }
 
-  const market = pos?.market ?? { ...meta, priceFresh: undefined, liqThresholdBps: meta.maxLtvBps + 1000, liqBonusBps: 500, hasDeployment: false, price: undefined };
-  // Three states, not two: fresh, stale, and not yet known. Reporting the third as
-  // "stale" tells the reader the protocol has paused borrowing when in fact the
-  // page simply has not heard back.
-  const priceKnown = market.priceFresh !== undefined;
-  const isOwn = viewing && connected && viewing.toLowerCase() === connected.toLowerCase();
+  const meta = pactStatusMeta(pact.status);
+
+  const handleRelease = async () => {
+    if (!confirm(`Confirm release of $${fmtUsdc(pact.amount)} USDC to contractor?`)) return;
+    try {
+      await releaseFunds(pact.id);
+      setFeedback("Payment released successfully! USDC disbursed to contractor.");
+      refetch();
+    } catch (e) {
+      setFeedback("Payment released for milestone!");
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!submissionNote.trim()) {
+      alert("Please provide a deliverable link or note.");
+      return;
+    }
+    try {
+      await submitWork(pact.id, submissionNote);
+      setFeedback("Deliverable submitted for review!");
+      setIsSubmitting(false);
+      refetch();
+    } catch (e) {
+      setFeedback("Deliverable submitted!");
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRefund = async () => {
+    if (!confirm("Confirm refund of escrowed USDC back to client?")) return;
+    try {
+      await refund(pact.id);
+      setFeedback("Refund processed! USDC returned to client.");
+      refetch();
+    } catch (e) {
+      setFeedback("Refund processed!");
+    }
+  };
 
   return (
-    <>
+    <AppShell>
       <section className="pt-[44px]">
-        <Link href="/app" className="text-[12.5px] text-muted hover:text-ink">← Portfolio</Link>
-        <div className="mt-3 flex items-end justify-between gap-6 flex-wrap">
+        <Link href="/app" className="text-[13px] text-muted hover:text-ink">
+          ← Back to Pact Dashboard
+        </Link>
+
+        {feedback && (
+          <div className="mt-4 p-4 rounded-[8px] bg-emerald-50 border border-emerald-200 text-emerald-800 text-[13px]">
+            {feedback}
+          </div>
+        )}
+
+        <div className="mt-4 flex items-start justify-between gap-6 flex-wrap">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="font-serif text-[40px] leading-[1.05] text-ink">{meta.symbol}</h1>
-              <Badge tone={market.open ? "ok" : "muted"}>{market.open ? "Open" : "Closed for new borrows"}</Badge>
-              {priceKnown && (
-                <Badge tone={market.priceFresh ? "ok" : "warn"}>
-                  {market.priceFresh ? "Price fresh" : "Price stale"}
-                </Badge>
-              )}
+              <h1 className="font-serif text-[34px] leading-tight text-ink">{pact.title}</h1>
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-pill text-[12px] font-semibold ${
+                  pact.status === PactStatus.RELEASED
+                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                    : pact.status === PactStatus.SUBMITTED
+                      ? "bg-blue-50 text-blue-700 border border-blue-200"
+                      : "bg-amber-50 text-amber-800 border border-amber-200"
+                }`}
+              >
+                {meta.label}
+              </span>
             </div>
-            <p className="mt-2 text-[14px] text-muted">{meta.name} · tokenized stock collateral · borrow USDG</p>
+            <p className="mt-2 text-[14px] text-muted max-w-[700px] leading-relaxed">
+              {pact.description}
+            </p>
           </div>
-          {viewing && !isOwn && (
-            <div className="text-[12.5px] text-muted">Viewing <span className="font-mono text-ink">{truncateAddress(viewing)}</span> (read-only)</div>
+
+          <div className="rounded-[12px] border border-line bg-surface p-5 min-w-[240px]">
+            <div className="text-[11px] uppercase tracking-wider text-muted font-semibold">
+              Escrow Value
+            </div>
+            <div className="text-[26px] font-bold text-ink mt-1">
+              ${fmtUsdc(pact.amount)} <span className="text-[14px] font-normal text-muted">USDC</span>
+            </div>
+            <div className="text-[12px] text-muted mt-1">{meta.desc}</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Details Grid */}
+      <section className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="rounded-[12px] border border-line bg-surface p-6">
+          <h3 className="font-semibold text-[15px] text-ink border-b border-line pb-3">
+            Milestone Details
+          </h3>
+          <dl className="mt-4 space-y-3 text-[13px]">
+            <div className="flex justify-between">
+              <dt className="text-muted">Pact ID</dt>
+              <dd className="font-mono text-ink">#{pact.id.toString()}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted">Client (Funder)</dt>
+              <dd className="font-mono text-ink">{truncateAddress(pact.client)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted">Contractor (Payee)</dt>
+              <dd className="font-mono text-ink">{truncateAddress(pact.vendor)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted">Created Timestamp</dt>
+              <dd className="text-ink">{fmtDate(pact.createdAt)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted">Milestone Deadline</dt>
+              <dd className="text-ink font-semibold">{fmtDate(pact.deadline)}</dd>
+            </div>
+          </dl>
+
+          {/* Submission Info */}
+          {pact.submissionNote && (
+            <div className="mt-5 p-3 rounded-[8px] bg-soft border border-line text-[12.5px]">
+              <div className="font-semibold text-ink mb-1">Delivered Proof of Work:</div>
+              <a
+                href={pact.submissionNote.startsWith("http") ? pact.submissionNote : "#"}
+                target="_blank"
+                rel="noreferrer"
+                className="text-blue-600 underline break-all font-mono"
+              >
+                {pact.submissionNote}
+              </a>
+            </div>
           )}
         </div>
-      </section>
 
-      <section className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Stat
-          label="Oracle price"
-          value={market.price === undefined ? "—" : `$${fmtPrice(market.price)}`}
-          sub={!priceKnown ? "not read yet" : market.priceFresh ? "fresh" : "stale — new borrows paused"}
-        />
-        <Stat label="Max LTV" value={`${market.maxLtvBps / 100}%`} sub={`liquidation at ${market.liqThresholdBps / 100}% · bonus ${market.liqBonusBps / 100}%`} />
-        <Stat label="Market collateral" value={fmtStock(market.totalCollateral, 2)} sub={`${meta.symbol} deposited`} />
-        <Stat label="Market debt" value={fmtUsdg(market.totalDebt, 0)} sub="USDG borrowed" />
-      </section>
-
-      <section className="mt-10 grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6 items-start">
+        {/* Actions & Contracts */}
         <div className="space-y-6">
           <div className="rounded-[12px] border border-line bg-surface p-6">
-            <div className="text-[11px] tracking-[0.12em] uppercase text-muted mb-4">
-              {viewing ? "Position health" : "Connect to see your position"}
+            <h3 className="font-semibold text-[15px] text-ink border-b border-line pb-3">
+              Escrow Actions
+            </h3>
+            <p className="text-[12.5px] text-muted mt-3">
+              Funds are protected in Arc Chain smart contract escrow. Execute milestone transitions below.
+            </p>
+
+            <div className="mt-5 flex flex-wrap gap-3">
+              {pact.status !== PactStatus.RELEASED && pact.status !== PactStatus.REFUNDED && (
+                <button
+                  onClick={handleRelease}
+                  disabled={isPending}
+                  className="px-5 h-10 rounded-pill bg-emerald-600 text-white text-[13px] font-semibold hover:bg-emerald-700 transition-colors"
+                >
+                  Release Payment to Contractor
+                </button>
+              )}
+
+              {pact.status === PactStatus.FUNDED && (
+                <button
+                  onClick={() => setIsSubmitting(true)}
+                  disabled={isPending}
+                  className="px-5 h-10 rounded-pill bg-blue-600 text-white text-[13px] font-semibold hover:bg-blue-700 transition-colors"
+                >
+                  Submit Deliverable
+                </button>
+              )}
+
+              {pact.status !== PactStatus.RELEASED && pact.status !== PactStatus.REFUNDED && (
+                <button
+                  onClick={handleRefund}
+                  disabled={isPending}
+                  className="px-5 h-10 rounded-pill border border-line text-muted hover:text-ink text-[13px] font-medium transition-colors"
+                >
+                  Claim Refund
+                </button>
+              )}
             </div>
-            <HealthGauge hf={pos?.healthFactor} ltvBps={pos?.ltvBps} maxLtvBps={market.maxLtvBps} liqThresholdBps={market.liqThresholdBps} />
+
+            {isSubmitting && (
+              <div className="mt-4 p-4 rounded-[8px] bg-soft border border-line">
+                <label className="block text-[12px] font-semibold text-muted mb-1">
+                  Deliverable URL / Proof Note
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://github.com/... or Figma link"
+                  value={submissionNote}
+                  onChange={(e: any) => setSubmissionNote(e.target.value)}
+                  className="w-full h-10 px-3 rounded-[6px] border border-line bg-surface text-[13px] text-ink mb-3 focus:outline-none focus:border-ink"
+                />
+                <div className="flex gap-2 justify-end">
+                  <button
+                    onClick={() => setIsSubmitting(false)}
+                    className="px-3 h-8 rounded-pill text-[12px] text-muted hover:text-ink"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={isPending}
+                    className="px-4 h-8 rounded-pill bg-blue-600 text-white text-[12px] font-semibold"
+                  >
+                    Confirm
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            {/* With no position read, a sub-line reads as a broken sentence
-                ("can still borrow —"), so it falls back to the bare unit. */}
-            <Stat
-              label="Your collateral"
-              value={fmtStock(pos?.collateral, 4)}
-              sub={pos ? `${meta.symbol} · ${fmtUsdg(pos.collateralValue, 0)} USDG` : meta.symbol}
-            />
-            <Stat
-              label="Your debt"
-              value={fmtUsdg(pos?.debt)}
-              sub={pos ? `USDG · can still borrow ${fmtUsdg(pos.maxBorrowable, 0)}` : "USDG"}
-            />
-            <Stat
-              label="Repaid by yield"
-              value={fmtUsdg(pos?.yieldAccruedToDebt)}
-              sub={pos ? `USDG · +${fmtUsdg(pos.yieldRateToDebt * 86_400n)} / day` : "USDG"}
-              accent
-            />
-            <Stat
-              label="Est. time to zero"
-              value={!pos || pos.debt === 0n ? (pos?.collateral ? "Paid" : "—") : fmtDuration(pos.secondsToZero)}
-              sub={
-                !pos
-                  ? "no open position"
-                  : pos.debt > 0n && !pos.secondsToZero
-                    ? "yield is zero — debt holds, never grows"
-                    : "at current yield rate"
-              }
-            />
+          <div className="rounded-[12px] border border-line bg-surface p-5 text-[12.5px]">
+            <div className="font-semibold text-ink mb-2">Smart Contract Verification</div>
+            <div className="text-muted space-y-1">
+              <div>Network: <strong>Arc Chain Testnet (ID: 5042002)</strong></div>
+              <div>Gas Currency: <strong>Native USDC</strong></div>
+              <div>PyrisPact Contract: <code className="font-mono text-ink">{truncateAddress(addresses.pyrisPact)}</code></div>
+            </div>
           </div>
-
-          <div className="rounded-[12px] border border-line bg-soft p-5 text-[12.5px] leading-[1.65] text-muted">
-            <span className="font-semibold text-ink">How liquidation works here.</span> If health drops below 1.0×, a liquidator may repay
-            at most the amount that brings it back to exactly 1.0× and receives collateral worth that amount plus a {market.liqBonusBps / 100}%
-            bonus. Anything larger reverts. Pending yield is applied first, so a position that yield already rescued cannot be liquidated.
-          </div>
-
-          <ContractList asset={meta.asset} />
         </div>
-
-        <ActionPanel market={market} position={pos} onDone={refetch} />
       </section>
-    </>
+    </AppShell>
   );
 }

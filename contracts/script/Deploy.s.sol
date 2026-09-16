@@ -5,7 +5,7 @@ import {Script, console} from "forge-std/Script.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
-import {PillarCore} from "../src/PillarCore.sol";
+import {PyrisCore} from "../src/PyrisCore.sol";
 import {ChainlinkOracle} from "../src/ChainlinkOracle.sol";
 import {ERC4626YieldSource} from "../src/ERC4626YieldSource.sol";
 import {IAggregatorV3} from "../src/IAggregatorV3.sol";
@@ -67,7 +67,7 @@ contract Deploy is Script {
         ERC4626YieldSource ys = new ERC4626YieldSource(
             deployer, IERC20(usdg), IPriceOracle(address(oracle)), ISwapRouter(router), slippageBps
         );
-        PillarCore core = new PillarCore(deployer, IERC20(usdg), IPriceOracle(address(oracle)), feeRecipient);
+        PyrisCore core = new PyrisCore(deployer, IERC20(usdg), IPriceOracle(address(oracle)), feeRecipient);
         core.setMaxStaleness(maxStaleness);
 
         for (uint256 i; i < cfgs.length; ++i) {
@@ -122,7 +122,7 @@ contract Deploy is Script {
     }
 
     function _write(
-        PillarCore core,
+        PyrisCore core,
         ChainlinkOracle oracle,
         ERC4626YieldSource ys,
         address usdg,
@@ -135,7 +135,7 @@ contract Deploy is Script {
         vm.serializeAddress(root, "usdg", usdg);
         vm.serializeAddress(root, "oracle", address(oracle));
         vm.serializeAddress(root, "yieldSource", address(ys));
-        vm.serializeAddress(root, "pillarCore", address(core));
+        vm.serializeAddress(root, "PyrisCore", address(core));
 
         string memory mk = "markets";
         string memory marketsJson;
@@ -151,7 +151,8 @@ contract Deploy is Script {
         string memory out = vm.serializeString(root, "markets", marketsJson);
         string memory outFile = string.concat("deployments/", vm.toString(block.chainid), ".json");
         vm.writeJson(out, outFile);
-        console.log("PillarCore:", address(core));
+        console.log("PyrisCore:", address(core));
         console.log("wrote", outFile);
     }
 }
+

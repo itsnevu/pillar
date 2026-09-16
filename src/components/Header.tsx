@@ -2,8 +2,8 @@ import Link from "next/link";
 import { ConnectButton } from "@/components/ConnectButton";
 import { HeaderNavigation } from "@/components/HeaderNavigation";
 
-/** Inline column glyph (same drawing as /brand/pillar-mark.svg). Used by the /app shell. */
-export function PillarMark({ size = 30 }: { size?: number }) {
+/** Inline column glyph (same drawing as /brand/pyris-mark.svg). Used by the /app shell. */
+export function PyrisMark({ size = 30 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 36 36" fill="none" aria-hidden="true">
       <rect x="4" y="4" width="28" height="4.2" rx="0.6" fill="#292524" />
@@ -21,7 +21,7 @@ export function Banner() {
   return (
     <aside className="turret-beta-notice" aria-label="Open beta notice">
       <p>
-        <strong>Pillar is in open beta.</strong> Start with small amounts.
+        <strong>Pyris Pact is in open beta.</strong> Programmable B2B escrow & payments on Arc Chain.
       </p>
     </aside>
   );
@@ -31,13 +31,13 @@ export function Header() {
   return (
     <header className="rusd-topbar">
       <div className="rusd-frame rusd-topbar-inner rusd-topbar-preview">
-        <Link aria-label="Pillar home" className="rusd-brand-link" href="/">
-          <span aria-label="Pillar" className="dockyard-logo" role="img" style={{ height: 36 }}>
+        <Link aria-label="Pyris home" className="rusd-brand-link" href="/">
+          <span aria-label="Pyris" className="dockyard-logo" role="img" style={{ height: 36 }}>
             <span aria-hidden="true" className="dockyard-logo-mark-frame" style={{ height: 36, width: 36 }}>
-              <img alt="" className="dockyard-logo-mark" height={36} width={36} src="/brand/pillar-mark.svg" />
+              <img alt="" className="dockyard-logo-mark" height={36} width={36} src="/brand/pyris-mark.svg" />
             </span>
             <span className="dockyard-logo-wordmark" style={{ fontSize: "23.76px" }}>
-              pillar.
+              pyris.
             </span>
           </span>
         </Link>
@@ -45,9 +45,9 @@ export function Header() {
         <HeaderNavigation />
 
         <div className="rusd-account">
-          <span className="rusd-network" title="Robinhood Chain">
+          <span className="rusd-network" title="Arc Chain">
             <span aria-hidden="true" className="rusd-network-dot" />
-            <span className="rusd-network-name">Robinhood Chain</span>
+            <span className="rusd-network-name">Arc Chain</span>
           </span>
           <div className="dockyard-wallet-control">
             <div className="dockyard-wallet-control" style={{ opacity: 1, transform: "scale(1)" }}>

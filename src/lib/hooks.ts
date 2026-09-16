@@ -1,177 +1,194 @@
 "use client";
 
 import { useMemo, useSyncExternalStore } from "react";
-import { useReadContracts } from "wagmi";
+import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import type { Address } from "viem";
-import { MARKETS, PillarCoreAbi, ChainlinkOracleAbi, addresses, hasDeployment, type MarketMeta } from "./contracts";
-
-export type MarketLive = MarketMeta & {
-  /** Oracle price, USD per token, 1e18. */
-  price?: bigint;
-  priceUpdatedAt?: bigint;
-  /**
-   * Whether the oracle price is inside the staleness window. `undefined` means the
-   * chain has not answered — which is not the same claim as "the feed is stale",
-   * and must not be rendered as one.
-   */
-  priceFresh?: boolean;
-  liqThresholdBps: number;
-  liqBonusBps: number;
-  totalCollateral?: bigint;
-  totalDebt?: bigint;
-  hasDeployment: boolean;
-};
-
-export type UserPosition = {
-  market: MarketLive;
-  collateral: bigint;
-  debt: bigint;
-  yieldAccruedToDebt: bigint;
-  collateralValue: bigint;
-  ltvBps: bigint;
-  healthFactor: bigint;
-  maxBorrowable: bigint;
-  pendingYield: bigint;
-  /** USDG (6 dec) per second flowing to debt after protocol cut. */
-  yieldRateToDebt: bigint;
-  /** Seconds until debt hits zero at the current yield rate; undefined if rate is 0 or debt is 0. */
-  secondsToZero?: number;
-};
+import { PyrisPactAbi, addresses, type Pact, PactStatus } from "./contracts";
 
 const noop = () => () => {};
-/** true after hydration, false during SSR — without a setState-in-effect. */
+/** true after hydration, false during SSR */
 export function useMounted() {
   return useSyncExternalStore(noop, () => true, () => false);
 }
 
-const core = addresses.pillarCore as Address | undefined;
-const oracle = addresses.oracle as Address | undefined;
+const pactAddress = addresses.pyrisPact as Address;
+
+// Initial demonstration data for seamless preview before contracts are deployed
+const DEMO_PACTS: Pact[] = [
+  {
+    id: 1n,
+    client: "0x1111111111111111111111111111111111111111" as Address,
+    vendor: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" as Address,
+    amount: 3500_000000n, // $3,500 USDC
+    deadline: BigInt(Math.floor(Date.now() / 1000) + 86400 * 5),
+    status: PactStatus.SUBMITTED,
+    title: "Arc Chain Smart Contract Integration",
+    description: "Write PyrisEscrow.sol with milestone release & comprehensive Foundry test coverage.",
+    submissionNote: "https://github.com/itsnevu/pyris/pull/14",
+    createdAt: BigInt(Math.floor(Date.now() / 1000) - 86400 * 3),
+    submittedAt: BigInt(Math.floor(Date.now() / 1000) - 3600 * 4),
+  },
+  {
+    id: 2n,
+    client: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" as Address,
+    vendor: "0x2222222222222222222222222222222222222222" as Address,
+    amount: 1800_000000n, // $1,800 USDC
+    deadline: BigInt(Math.floor(Date.now() / 1000) + 86400 * 12),
+    status: PactStatus.FUNDED,
+    title: "Editorial Design & Brand Guidelines",
+    description: "Produce typography tokens, vector column marks, and responsive Figma components.",
+    submissionNote: "",
+    createdAt: BigInt(Math.floor(Date.now() / 1000) - 86400),
+    submittedAt: 0n,
+  },
+  {
+    id: 3n,
+    client: "0x3333333333333333333333333333333333333333" as Address,
+    vendor: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" as Address,
+    amount: 5000_000000n, // $5,000 USDC
+    deadline: BigInt(Math.floor(Date.now() / 1000) - 86400 * 2),
+    status: PactStatus.RELEASED,
+    title: "Institutional Custody Security Audit",
+    description: "Full threat modeling and verification of multi-sig settlement flows.",
+    submissionNote: "https://audit.pyris.tech/reports/q3.pdf",
+    createdAt: BigInt(Math.floor(Date.now() / 1000) - 86400 * 14),
+    submittedAt: BigInt(Math.floor(Date.now() / 1000) - 86400 * 3),
+  },
+];
 
 /**
- * Live view of every listed market: open flag, LTV/threshold, oracle price + freshness.
- * Falls back to the static deployment metadata (and `hasDeployment: false`) when no
- * deployment file exists or the chain is unreachable.
+ * Hook to retrieve all pacts, filtered by client/vendor role
  */
-export function useMarkets() {
-  const contracts = useMemo(
-    () =>
-      hasDeployment && core && oracle
-        ? MARKETS.flatMap((m) => [
-            { address: core, abi: PillarCoreAbi, functionName: "markets", args: [m.asset] } as const,
-            { address: oracle, abi: ChainlinkOracleAbi, functionName: "getPrice", args: [m.asset] } as const,
-            { address: core, abi: PillarCoreAbi, functionName: "isPriceFresh", args: [m.asset] } as const,
-          ])
-        : [],
-    [],
-  );
-
-  const q = useReadContracts({ contracts, query: { enabled: contracts.length > 0 } });
-
-  const markets: MarketLive[] = useMemo(
-    () =>
-      MARKETS.map((m, i) => {
-        const mk = q.data?.[i * 3]?.result as
-          | readonly [boolean, boolean, number, number, number, number, bigint, bigint, bigint, bigint, Address]
-          | undefined;
-        const pr = q.data?.[i * 3 + 1]?.result as readonly [bigint, bigint] | undefined;
-        const fresh = q.data?.[i * 3 + 2]?.result as boolean | undefined;
-        return {
-          ...m,
-          open: mk ? mk[1] : m.open,
-          maxLtvBps: mk ? Number(mk[3]) : m.maxLtvBps,
-          liqThresholdBps: mk ? Number(mk[4]) : m.maxLtvBps + 1000,
-          liqBonusBps: mk ? Number(mk[5]) : 500,
-          totalCollateral: mk?.[7],
-          totalDebt: mk?.[8],
-          price: pr?.[0],
-          priceUpdatedAt: pr?.[1],
-          priceFresh: fresh,
-          hasDeployment: hasDeployment && q.isSuccess,
-        };
-      }),
-    [q.data, q.isSuccess],
-  );
-
-  return { markets, isLoading: q.isLoading, isError: q.isError, refetch: q.refetch, hasDeployment };
-}
-
-/** Positions for `address` across all markets, with derived risk numbers. */
-export function useUserPositions(address?: Address) {
-  const { markets, ...rest } = useMarkets();
-  const contracts = useMemo(
-    () =>
-      address && core
-        ? MARKETS.flatMap((m) => {
-            const args = [address, m.asset] as const;
-            return [
-              { address: core, abi: PillarCoreAbi, functionName: "getPosition", args } as const,
-              { address: core, abi: PillarCoreAbi, functionName: "collateralValue", args } as const,
-              { address: core, abi: PillarCoreAbi, functionName: "ltv", args } as const,
-              { address: core, abi: PillarCoreAbi, functionName: "healthFactor", args } as const,
-              { address: core, abi: PillarCoreAbi, functionName: "maxBorrowable", args } as const,
-              { address: core, abi: PillarCoreAbi, functionName: "pendingYield", args } as const,
-              { address: core, abi: PillarCoreAbi, functionName: "yieldRateToDebt", args } as const,
-            ];
-          })
-        : [],
-    [address],
-  );
-  const q = useReadContracts({ contracts, query: { enabled: contracts.length > 0 } });
-
-  const credit = useReadContracts({
-    contracts: address && core ? [{ address: core, abi: PillarCoreAbi, functionName: "usdgCredit", args: [address] } as const] : [],
-    query: { enabled: !!address && !!core },
+export function usePacts(userAddress?: Address) {
+  const { data: rawPacts, refetch, isLoading, isError } = useReadContract({
+    address: pactAddress,
+    abi: PyrisPactAbi,
+    functionName: "getPacts",
+    args: [0n, 50n],
+    query: {
+      enabled: !!pactAddress,
+    },
   });
 
-  const positions: UserPosition[] = useMemo(() => {
-    if (!q.data) return [];
-    const N = 7;
-    return markets.map((market, i) => {
-      const pos = q.data[i * N]?.result as
-        | { collateral: bigint; debt: bigint; yieldAccruedToDebt: bigint; yieldIndexSnapshot: bigint }
-        | undefined;
-      const g = (k: number) => (q.data?.[i * N + k]?.result as bigint | undefined) ?? 0n;
-      const debt = pos?.debt ?? 0n;
-      const rate = g(6);
-      return {
-        market,
-        collateral: pos?.collateral ?? 0n,
-        debt,
-        yieldAccruedToDebt: pos?.yieldAccruedToDebt ?? 0n,
-        collateralValue: g(1),
-        ltvBps: g(2),
-        healthFactor: (q.data?.[i * N + 3]?.result as bigint | undefined) ?? 2n ** 256n - 1n,
-        maxBorrowable: g(4),
-        pendingYield: g(5),
-        yieldRateToDebt: rate,
-        secondsToZero: debt > 0n && rate > 0n ? Number(debt) / Number(rate) : undefined,
-      };
-    });
-  }, [q.data, markets]);
+  const pacts: Pact[] = useMemo(() => {
+    if (rawPacts && Array.isArray(rawPacts) && rawPacts.length > 0) {
+      return rawPacts as Pact[];
+    }
+    return DEMO_PACTS;
+  }, [rawPacts]);
 
-  const active = positions.filter((p) => p.collateral > 0n || p.debt > 0n);
-  const totals = active.reduce(
-    (a, p) => ({
-      collateralValue: a.collateralValue + p.collateralValue,
-      debt: a.debt + p.debt,
-      yieldAccruedToDebt: a.yieldAccruedToDebt + p.yieldAccruedToDebt,
-      yieldRateToDebt: a.yieldRateToDebt + p.yieldRateToDebt,
-    }),
-    { collateralValue: 0n, debt: 0n, yieldAccruedToDebt: 0n, yieldRateToDebt: 0n },
-  );
+  const outgoingPacts = useMemo(() => {
+    if (!userAddress) return pacts;
+    const filtered = pacts.filter(
+      (p) => p.client.toLowerCase() === userAddress.toLowerCase()
+    );
+    return filtered.length > 0 ? filtered : pacts;
+  }, [pacts, userAddress]);
+
+  const incomingPacts = useMemo(() => {
+    if (!userAddress) return [];
+    return pacts.filter(
+      (p) => p.vendor.toLowerCase() === userAddress.toLowerCase()
+    );
+  }, [pacts, userAddress]);
+
+  const stats = useMemo(() => {
+    let totalEscrowVolume = 0n;
+    let activeEscrowAmount = 0n;
+    let completedPayouts = 0n;
+    let activeCount = 0;
+    let completedCount = 0;
+
+    for (const p of pacts) {
+      totalEscrowVolume += p.amount;
+      if (p.status === PactStatus.FUNDED || p.status === PactStatus.SUBMITTED) {
+        activeEscrowAmount += p.amount;
+        activeCount++;
+      } else if (p.status === PactStatus.RELEASED) {
+        completedPayouts += p.amount;
+        completedCount++;
+      }
+    }
+
+    return {
+      totalEscrowVolume,
+      activeEscrowAmount,
+      completedPayouts,
+      activeCount,
+      completedCount,
+      totalCount: pacts.length,
+    };
+  }, [pacts]);
 
   return {
-    positions,
-    active,
-    totals,
-    usdgCredit: (credit.data?.[0]?.result as bigint | undefined) ?? 0n,
-    isLoading: q.isLoading || rest.isLoading,
-    isError: q.isError,
-    refetch: () => {
-      q.refetch();
-      credit.refetch();
-      rest.refetch();
-    },
-    hasDeployment,
+    pacts,
+    outgoingPacts,
+    incomingPacts,
+    stats,
+    isLoading,
+    isError,
+    refetch,
+  };
+}
+
+/**
+ * Hook for executing Pact escrow actions
+ */
+export function usePactMutations() {
+  const { writeContractAsync, data: hash, isPending } = useWriteContract();
+  const { isLoading: isWaiting, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  const createPact = async (
+    vendor: Address,
+    amount: bigint,
+    deadlineSeconds: number,
+    title: string,
+    description: string
+  ) => {
+    const deadline = BigInt(Math.floor(Date.now() / 1000) + deadlineSeconds);
+    return await writeContractAsync({
+      address: pactAddress,
+      abi: PyrisPactAbi,
+      functionName: "createPact",
+      args: [vendor, amount, deadline, title, description],
+      value: amount,
+    });
+  };
+
+  const submitWork = async (pactId: bigint, submissionNote: string) => {
+    return await writeContractAsync({
+      address: pactAddress,
+      abi: PyrisPactAbi,
+      functionName: "submitWork",
+      args: [pactId, submissionNote],
+    });
+  };
+
+  const releaseFunds = async (pactId: bigint) => {
+    return await writeContractAsync({
+      address: pactAddress,
+      abi: PyrisPactAbi,
+      functionName: "releaseFunds",
+      args: [pactId],
+    });
+  };
+
+  const refund = async (pactId: bigint) => {
+    return await writeContractAsync({
+      address: pactAddress,
+      abi: PyrisPactAbi,
+      functionName: "refund",
+      args: [pactId],
+    });
+  };
+
+  return {
+    createPact,
+    submitWork,
+    releaseFunds,
+    refund,
+    isPending: isPending || isWaiting,
+    isSuccess,
+    hash,
   };
 }

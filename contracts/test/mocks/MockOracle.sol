@@ -7,7 +7,7 @@ import {IPriceOracle} from "../../src/IPriceOracle.sol";
 /// @title MockOracle
 /// @notice Owner-set price feed for local development and tests.
 /// @dev LOCAL / TEST ONLY. In production this is replaced by an adapter over a
-///      Chainlink / Pyth / Robinhood Chain equities feed. `markStale` forces
+///      Chainlink / Pyth / Arc Chain equities feed. `markStale` forces
 ///      `updatedAt` far into the past so tests can exercise staleness rules.
 contract MockOracle is IPriceOracle, Ownable {
     struct Observation {

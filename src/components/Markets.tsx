@@ -1,212 +1,180 @@
 "use client";
 
 import Link from "next/link";
-
-import { useMarkets } from "@/lib/hooks";
-import { fmtPrice } from "@/lib/contracts";
-
-type Market = {
-  ticker: string;
-  name: string;
-  /** Oracle price, formatted. Undefined until the chain answers — never a placeholder. */
-  value?: string;
-  /** Max LTV in percent, read from the market. Undefined until the chain answers. */
-  maxLtv?: number;
-  state?: "open" | "closed";
-  /** On-chain price exists but is older than the staleness window: borrowing is blocked. */
-  stale?: boolean;
-};
-
-type Group = { title: string; markets: Market[] };
-
-/**
- * Which table a ticker belongs in, and the display name to show beside it.
- * This is the only thing about a market that is hard-coded — a label, not a
- * number. Price, max LTV and open/closed are read from the chain, and a market
- * that is not in the deployment is not shown at all.
- */
-const CATEGORY: Record<string, { title: string; name?: string }> = {
-  AAPL: { title: "Stocks" },
-  MSFT: { title: "Stocks" },
-  GOOGL: { title: "Stocks" },
-  AMZN: { title: "Stocks" },
-  META: { title: "Stocks" },
-  NVDA: { title: "Stocks" },
-  AMD: { title: "Stocks" },
-  MU: { title: "Stocks" },
-  TSLA: { title: "Stocks" },
-  SPY: { title: "ETFs" },
-  QQQ: { title: "ETFs" },
-  SLV: { title: "Metals" },
-  CASHCAT: { title: "Memecoins" },
-};
-
-const CATEGORY_ORDER = ["Stocks", "ETFs", "Metals", "Memecoins", "Other"];
-
-function StatusHeading() {
-  return (
-    <span className="turret-term-label">
-      <span>Status</span>
-      <span className="turret-field-info">
-        <div>
-          <button
-            type="button"
-            className="turret-info-trigger"
-            aria-label="About vault status"
-            aria-expanded={false}
-          >
-            <svg fill="none" viewBox="0 0 24 24" width="16" height="16">
-              <path
-                fill="currentColor"
-                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2Zm1 15h-2v-6h2v6Zm0-8h-2V7h2v2Z"
-              />
-            </svg>
-          </button>
-        </div>
-      </span>
-    </span>
-  );
-}
-
-function Status({ state }: { state: Market["state"] }) {
-  const closed = state === "closed";
-  return (
-    <span className="borrow-directory-status rusd-market-status" data-state={closed ? "closed" : "open"}>
-      <span aria-hidden="true" className="rusd-market-status-icon">
-        {closed ? (
-          <svg fill="none" viewBox="0 0 18 18" focusable="false">
-            <circle cx="9" cy="9" r="5.25" />
-            <path d="M5.3 12.7 12.7 5.3" />
-          </svg>
-        ) : (
-          <svg fill="none" viewBox="0 0 18 18" focusable="false">
-            <path d="m5 9.2 2.45 2.45L13.2 6" />
-          </svg>
-        )}
-      </span>
-      <span>{closed ? "Closed" : "Open"}</span>
-    </span>
-  );
-}
-
-function MarketTable({ group, showCaption }: { group: Group; showCaption: boolean }) {
-  const n = group.markets.length;
-  return (
-    <section>
-      <h2>{group.title}</h2>
-      <table className="rusd-market-table">
-        {/* The explanation belongs on the first table only; repeating it under
-            every group turned one useful sentence into three lines of noise. */}
-        <caption className="borrow-table-caption">
-          {n} collateral market{n === 1 ? "" : "s"}
-          {showCaption && " · Open means the vault is enabled. Borrow capacity is checked in the market."}
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">Market</th>
-            <th scope="col">
-              <StatusHeading />
-            </th>
-            <th scope="col">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {group.markets.map((m) => (
-            <tr className="borrow-directory-row" key={m.ticker}>
-              <td>
-                <div className="borrow-table-identity">
-                  <strong>{m.ticker}</strong>
-                  <span>{m.name}</span>
-                </div>
-                <div className="borrow-directory-value">
-                  <span>Oracle price</span>
-                  <span>{m.value ? `${m.value} USDG` : "—"}</span>
-                </div>
-                <div className="borrow-directory-value">
-                  <span>Max LTV</span>
-                  <span>{m.maxLtv !== undefined ? `${m.maxLtv}%` : "—"}</span>
-                </div>
-                {m.stale && (
-                  <div className="borrow-directory-value">
-                    <span>Oracle</span>
-                    <span>Stale · borrowing paused</span>
-                  </div>
-                )}
-              </td>
-              <td>
-                <Status state={m.state} />
-              </td>
-              <td>
-                <Link
-                  className="rusd-action rusd-action-secondary"
-                  href={`/app/${m.ticker}`}
-                  aria-label={`View ${m.ticker} market`}
-                >
-                  View market
-                </Link>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
-  );
-}
+import { usePacts } from "@/lib/hooks";
+import { fmtUsdc, truncateAddress, fmtDate, pactStatusMeta } from "@/lib/contracts";
 
 export function Markets() {
-  const { markets, hasDeployment, isLoading, isError } = useMarkets();
-
-  // Every row is a market the chain actually reports. There is no static price
-  // table to fall back on: a number on this page is either read from the
-  // contract or it is not shown.
-  const byTitle = new Map<string, Market[]>();
-  for (const m of markets) {
-    const cat = CATEGORY[m.symbol] ?? { title: "Other" };
-    const row: Market = {
-      ticker: m.symbol,
-      name: cat.name ?? m.name,
-      value: m.price !== undefined ? fmtPrice(m.price) : undefined,
-      maxLtv: m.maxLtvBps ? m.maxLtvBps / 100 : undefined,
-      state: m.open ? "open" : "closed",
-      // Only an explicit `false` means stale. While the read is in flight
-      // `priceFresh` is undefined, and rendering that as "borrowing paused"
-      // would announce a protocol state that is not happening.
-      stale: m.priceFresh === false,
-    };
-    const list = byTitle.get(cat.title);
-    if (list) list.push(row);
-    else byTitle.set(cat.title, [row]);
-  }
-
-  const groups: Group[] = CATEGORY_ORDER.filter((t) => byTitle.has(t)).map((title) => ({
-    title,
-    markets: byTitle.get(title)!,
-  }));
-
-  if (groups.length === 0) {
-    return (
-      <p className="borrow-directory-note" id="markets">
-        {isLoading
-          ? "Loading markets from the chain…"
-          : isError || !hasDeployment
-            ? "Markets are unavailable right now — the app could not reach the chain. Nothing on this page is a placeholder, so no figures are shown until it can."
-            : "No markets are listed yet."}
-      </p>
-    );
-  }
+  const { pacts, stats } = usePacts();
 
   return (
-    <>
-      <div className="borrow-original-tables" id="markets">
-        {groups.map((g, i) => (
-          <MarketTable key={g.title} group={g} showCaption={i === 0} />
-        ))}
-      </div>
-      <p className="borrow-directory-note">
-        Prices and limits above are read live from the protocol. Loan-to-value limits are set
-        conservatively because equity markets close while your loan stays live.{" "}
-        <Link href="/risk">How Pillar handles that risk</Link>.
-      </p>
-    </>
+    <div id="pacts" style={{ marginTop: "24px" }}>
+      {/* Live Escrow Directory Table */}
+      <section>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "12px" }}>
+          <h2>Live Escrow Milestones</h2>
+          <span style={{ fontSize: "14px", color: "var(--rusd-muted, #78716c)" }}>
+            Total Value Locked: <strong>${fmtUsdc(stats.totalEscrowVolume)} USDC</strong>
+          </span>
+        </div>
+
+        <table className="rusd-market-table">
+          <caption className="borrow-table-caption">
+            {stats.totalCount} registered pacts · Instant sub-second settlement on Arc Chain
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Milestone & Scope</th>
+              <th scope="col">Escrow Amount</th>
+              <th scope="col">Status</th>
+              <th scope="col">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pacts.map((p) => {
+              const meta = pactStatusMeta(p.status);
+              return (
+                <tr className="borrow-directory-row" key={p.id.toString()}>
+                  <td>
+                    <div className="borrow-table-identity">
+                      <strong>{p.title}</strong>
+                      <span style={{ fontSize: "13px", color: "var(--rusd-muted, #78716c)" }}>
+                        Client: {truncateAddress(p.client)} → Contractor: {truncateAddress(p.vendor)}
+                      </span>
+                    </div>
+                    <div className="borrow-directory-value">
+                      <span>Deadline</span>
+                      <span>{fmtDate(p.deadline)}</span>
+                    </div>
+                    {p.submissionNote && (
+                      <div className="borrow-directory-value">
+                        <span>Proof</span>
+                        <span style={{ maxWidth: "240px", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {p.submissionNote}
+                        </span>
+                      </div>
+                    )}
+                  </td>
+                  <td>
+                    <div style={{ fontSize: "16px", fontWeight: 600 }}>
+                      ${fmtUsdc(p.amount)} <small style={{ fontWeight: 400, color: "#78716c" }}>USDC</small>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        padding: "4px 10px",
+                        borderRadius: "9999px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        backgroundColor:
+                          p.status === 2
+                            ? "rgba(34, 197, 94, 0.12)"
+                            : p.status === 1
+                              ? "rgba(59, 130, 246, 0.12)"
+                              : "rgba(234, 179, 8, 0.12)",
+                        color:
+                          p.status === 2
+                            ? "#15803d"
+                            : p.status === 1
+                              ? "#1d4ed8"
+                              : "#a16207",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: "6px",
+                          height: "6px",
+                          borderRadius: "50%",
+                          backgroundColor: "currentColor",
+                        }}
+                      />
+                      {meta.label}
+                    </span>
+                  </td>
+                  <td>
+                    <Link
+                      className="rusd-action rusd-action-secondary"
+                      href="/app"
+                      aria-label={`View ${p.title} in dashboard`}
+                    >
+                      View in App
+                    </Link>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </section>
+
+      {/* Comparison Grid */}
+      <section style={{ marginTop: "48px", borderTop: "1px solid var(--rusd-border, #e7e5e4)", paddingTop: "32px" }}>
+        <h2 style={{ fontSize: "20px", marginBottom: "8px" }}>Why Businesses Choose Pyris Pact</h2>
+        <p style={{ color: "var(--rusd-muted, #78716c)", fontSize: "14px", marginBottom: "20px" }}>
+          Traditional payment rails and centralized freelancer platforms take a massive cut of your margin.
+        </p>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
+          <div
+            style={{
+              padding: "20px",
+              border: "1px solid var(--rusd-border, #e7e5e4)",
+              borderRadius: "8px",
+              background: "#fafaf9",
+            }}
+          >
+            <h3 style={{ fontSize: "15px", fontWeight: 600, marginBottom: "8px", color: "#44403c" }}>
+              Traditional Freelance Escrows
+            </h3>
+            <ul style={{ fontSize: "13px", color: "#57534e", lineHeight: 1.6, paddingLeft: "18px", margin: 0 }}>
+              <li><strong>10% – 20% platform commission</strong> deducted from payouts.</li>
+              <li>5 – 14 business days dispute and withdrawal hold.</li>
+              <li>Arbitrary account suspensions and freezing.</li>
+            </ul>
+          </div>
+
+          <div
+            style={{
+              padding: "20px",
+              border: "1px solid var(--rusd-border, #e7e5e4)",
+              borderRadius: "8px",
+              background: "#fafaf9",
+            }}
+          >
+            <h3 style={{ fontSize: "15px", fontWeight: 600, marginBottom: "8px", color: "#44403c" }}>
+              International Bank Wires
+            </h3>
+            <ul style={{ fontSize: "13px", color: "#57534e", lineHeight: 1.6, paddingLeft: "18px", margin: 0 }}>
+              <li><strong>$35 – $50 flat fee</strong> per international wire transfer.</li>
+              <li>3 – 5 days settlement time with zero visibility.</li>
+              <li>2% – 4% foreign exchange conversion markups.</li>
+            </ul>
+          </div>
+
+          <div
+            style={{
+              padding: "20px",
+              border: "1.5px solid #292524",
+              borderRadius: "8px",
+              background: "#fff",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+            }}
+          >
+            <h3 style={{ fontSize: "15px", fontWeight: 700, marginBottom: "8px", color: "#1c1917" }}>
+              Pyris Pact on Arc Chain ✨
+            </h3>
+            <ul style={{ fontSize: "13px", color: "#292524", lineHeight: 1.6, paddingLeft: "18px", margin: 0 }}>
+              <li><strong>0% platform fee</strong> during open beta.</li>
+              <li>Sub-cent gas fees paid natively in <strong>USDC</strong>.</li>
+              <li>Sub-second settlement with onchain cryptographic guarantees.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }

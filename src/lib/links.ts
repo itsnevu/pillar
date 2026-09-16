@@ -12,7 +12,7 @@ export const LINKS = {
   x: env(process.env.NEXT_PUBLIC_X_URL),
   /** undefined until NEXT_PUBLIC_TELEGRAM_URL is set. */
   telegram: env(process.env.NEXT_PUBLIC_TELEGRAM_URL),
-  support: "mailto:support@pillar.finance",
+  support: "mailto:support@pyris.tech",
   // Live pages in this app:
   app: "/app",
   docs: "/docs",
@@ -24,7 +24,7 @@ export const LINKS = {
 } as const;
 
 /** Canonical origin, used for absolute URLs in metadata, sitemap and robots. */
-export const SITE_URL = env(process.env.NEXT_PUBLIC_SITE_URL) ?? "https://pillar.finance";
+export const SITE_URL = env(process.env.NEXT_PUBLIC_SITE_URL) ?? "https://pyris.tech";
 
 /** Block explorer link for an address, when the active chain publishes one. */
 export function explorerAddress(explorerUrl: string | undefined, address: string): string | undefined {

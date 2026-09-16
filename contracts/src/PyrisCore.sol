@@ -10,12 +10,12 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {IPriceOracle} from "./IPriceOracle.sol";
 import {IYieldSource} from "./IYieldSource.sol";
 
-/// @title PillarCore
-/// @notice Self-repaying credit against tokenized stocks.
+/// @title PyrisCore
+/// @notice Self-repaying credit against tokenized stocks on Arc Chain.
 ///
 /// Deposit a listed stock token as collateral -> borrow USDG up to the market's max
 /// LTV -> collateral is routed to the market's yield source -> harvested yield is
-/// applied to the debt. Pillar charges NO interest: debt never grows on its own, it
+/// applied to the debt. Pyris charges NO interest: debt never grows on its own, it
 /// only shrinks (via yield or manual repay). If yield is zero the debt simply stops
 /// shrinking. Protocol revenue is `protocolCutBps` of harvested yield.
 ///
@@ -25,7 +25,7 @@ import {IYieldSource} from "./IYieldSource.sol";
 ///    repay and harvest never depend on price freshness.
 ///  * Liquidation is partial: a liquidator may repay at most the amount that
 ///    restores the position to health factor == 1. Over-liquidation reverts.
-contract PillarCore is Ownable2Step, Pausable, ReentrancyGuard {
+contract PyrisCore is Ownable2Step, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     // ------------------------------------------------------------------ types

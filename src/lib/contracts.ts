@@ -1,57 +1,47 @@
 import type { Address } from "viem";
-import {
-  PillarCoreAbi,
-  ChainlinkOracleAbi,
-  ERC4626YieldSourceAbi,
-  IERC20MetadataAbi,
-} from "./generated/abis";
+import { PyrisPactAbi, IERC20MetadataAbi } from "./generated/abis";
 import { deployment } from "./generated/deployment";
 
-/** `Erc20Abi` is the standard interface, not any particular token's implementation:
- *  USDG and the collateral tokens are issued by other people. */
-export { PillarCoreAbi, ChainlinkOracleAbi, ERC4626YieldSourceAbi, IERC20MetadataAbi as Erc20Abi };
+export { PyrisPactAbi, IERC20MetadataAbi as Erc20Abi };
 
-export type MarketMeta = {
-  symbol: string;
-  name: string;
-  asset: Address;
-  maxLtvBps: number;
-  open: boolean;
+export enum PactStatus {
+  FUNDED = 0,
+  SUBMITTED = 1,
+  RELEASED = 2,
+  REFUNDED = 3,
+  DISPUTED = 4,
+}
+
+export type Pact = {
+  id: bigint;
+  client: Address;
+  vendor: Address;
+  amount: bigint;
+  deadline: bigint;
+  status: PactStatus;
+  title: string;
+  description: string;
+  submissionNote: string;
+  createdAt: bigint;
+  submittedAt: bigint;
 };
 
 type Deployment = {
   chainId: number;
   deployer: Address;
-  usdg: Address;
-  oracle: Address;
-  yieldSource: Address;
-  pillarCore: Address;
-  markets: Record<string, MarketMeta>;
+  usdc?: Address;
+  pyrisPact?: Address;
 } | null;
 
 export const DEPLOYMENT = deployment as unknown as Deployment;
 export const hasDeployment = DEPLOYMENT !== null;
 
 export const addresses = {
-  pillarCore: DEPLOYMENT?.pillarCore,
-  usdg: DEPLOYMENT?.usdg,
-  oracle: DEPLOYMENT?.oracle,
-  yieldSource: DEPLOYMENT?.yieldSource,
+  pyrisPact: DEPLOYMENT?.pyrisPact ?? ("0x6Ff91FCe342a7B62A1A0d450dA73f7f25d6DB801" as Address),
+  usdc: DEPLOYMENT?.usdc ?? ("0x0000000000000000000000000000000000000000" as Address),
 } as const;
 
-/** Static market list from the deployment (ticker-keyed). */
-export const MARKETS: MarketMeta[] = DEPLOYMENT
-  ? Object.values(DEPLOYMENT.markets).map((m) => ({ ...m, asset: m.asset as Address }))
-  : [];
-
-export function marketBySymbol(symbol: string): MarketMeta | undefined {
-  return MARKETS.find((m) => m.symbol.toUpperCase() === symbol.toUpperCase());
-}
-
-export const USDG_DECIMALS = 6;
-export const STOCK_DECIMALS = 18;
-export const WAD = 10n ** 18n;
-export const BPS = 10_000n;
+export const USDC_DECIMALS = 6;
 
 // ------------------------------------------------------------- formatting
 
@@ -67,42 +57,56 @@ export function fmtUnits(v: bigint | undefined, decimals: number, digits = 2): s
   return `${neg ? "-" : ""}${wholeStr}${digits > 0 ? "." + fracStr : ""}`;
 }
 
-export const fmtUsdg = (v?: bigint, d = 2) => fmtUnits(v, USDG_DECIMALS, d);
-export const fmtStock = (v?: bigint, d = 4) => fmtUnits(v, STOCK_DECIMALS, d);
-export const fmtPrice = (p?: bigint) => fmtUnits(p, 18, 2);
-
-export function fmtBps(bps?: bigint | number): string {
-  if (bps === undefined) return "—";
-  const n = typeof bps === "bigint" ? Number(bps) : bps;
-  if (!Number.isFinite(n) || n > 1e9) return "∞";
-  return `${(n / 100).toFixed(1)}%`;
-}
-
-/** Health factor 1e18 → "1.25×" (or "∞"). */
-export function fmtHealth(hf?: bigint): string {
-  if (hf === undefined) return "—";
-  if (hf >= 2n ** 200n) return "∞";
-  return `${(Number(hf) / 1e18).toFixed(2)}×`;
-}
-
-/** Seconds → "5.6 years" / "43 days" / "—". */
-export function fmtDuration(seconds?: number): string {
-  if (seconds === undefined || !Number.isFinite(seconds)) return "—";
-  if (seconds <= 0) return "0";
-  const d = seconds / 86400;
-  if (d >= 365) return `${(d / 365).toFixed(1)} years`;
-  if (d >= 1) return `${Math.ceil(d)} days`;
-  return `${Math.ceil(seconds / 3600)} hours`;
-}
+export const fmtUsdc = (v?: bigint, d = 2) => fmtUnits(v, USDC_DECIMALS, d);
 
 export function truncateAddress(a?: string): string {
   return a ? `${a.slice(0, 6)}…${a.slice(-4)}` : "";
 }
 
-/** Distance to liquidation in % of price drop: 1 - debt / (collValue * liqThreshold). */
-export function distanceToLiquidationPct(hf?: bigint): number | undefined {
-  if (hf === undefined || hf >= 2n ** 200n) return undefined;
-  const h = Number(hf) / 1e18;
-  if (h <= 1) return 0;
-  return (1 - 1 / h) * 100;
+export function fmtDate(timestamp?: bigint | number): string {
+  if (!timestamp) return "—";
+  const ms = typeof timestamp === "bigint" ? Number(timestamp) * 1000 : timestamp * 1000;
+  if (!Number.isFinite(ms) || ms <= 0) return "—";
+  return new Date(ms).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export function pactStatusMeta(status: PactStatus): { label: string; badgeClass: string; desc: string } {
+  switch (status) {
+    case PactStatus.FUNDED:
+      return {
+        label: "In Escrow",
+        badgeClass: "badge-funded",
+        desc: "USDC is locked in contract. Work in progress.",
+      };
+    case PactStatus.SUBMITTED:
+      return {
+        label: "Deliverable Submitted",
+        badgeClass: "badge-submitted",
+        desc: "Contractor submitted proof. Awaiting client review.",
+      };
+    case PactStatus.RELEASED:
+      return {
+        label: "Completed & Paid",
+        badgeClass: "badge-released",
+        desc: "Client approved work. USDC disbursed to contractor.",
+      };
+    case PactStatus.REFUNDED:
+      return {
+        label: "Refunded",
+        badgeClass: "badge-refunded",
+        desc: "Pact cancelled or expired. Funds returned to client.",
+      };
+    case PactStatus.DISPUTED:
+      return {
+        label: "Disputed",
+        badgeClass: "badge-disputed",
+        desc: "Flagged for arbitration or mediation.",
+      };
+    default:
+      return { label: "Unknown", badgeClass: "", desc: "" };
+  }
 }

@@ -42,7 +42,7 @@ contract ChainlinkOracleTest is Test {
         vm.warp(1_700_000_500);
         (, uint256 updatedAt) = oracle.getPrice(asset);
         // The oracle does not judge staleness; it reports what the feed said, so
-        // PillarCore stays the only place the staleness policy lives.
+        // PyrisCore stays the only place the staleness policy lives.
         assertEq(updatedAt, 1_699_999_000);
     }
 

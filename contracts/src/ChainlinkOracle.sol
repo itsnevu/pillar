@@ -7,9 +7,9 @@ import {IAggregatorV3} from "./IAggregatorV3.sol";
 
 /// @title ChainlinkOracle
 /// @notice Production price feed: one Chainlink-shaped aggregator per collateral
-///         asset, normalised to the 1e18 USD price PillarCore expects.
+///         asset, normalised to the 1e18 USD price PyrisCore expects.
 /// @dev This contract does not decide whether a price is too old. It reports the
-///      aggregator's `updatedAt` faithfully and lets PillarCore apply its own
+///      aggregator's `updatedAt` faithfully and lets PyrisCore apply its own
 ///      staleness rule, so there is a single place where that policy lives.
 ///
 ///      What it does refuse to report at all is a price that cannot be true:
@@ -19,7 +19,7 @@ import {IAggregatorV3} from "./IAggregatorV3.sol";
 ///
 ///      `maxAnswer` is an optional per-feed sanity ceiling. Chainlink aggregators
 ///      historically clamped answers to a circuit-breaker band and kept reporting
-///      the clamped value as if it were real; a ceiling lets Pillar reject a feed
+///      the clamped value as if it were real; a ceiling lets Pyris reject a feed
 ///      that has obviously pinned rather than lend against it.
 contract ChainlinkOracle is IPriceOracle, Ownable2Step {
     struct Feed {
@@ -58,7 +58,7 @@ contract ChainlinkOracle is IPriceOracle, Ownable2Step {
     }
 
     /// @notice Stop reporting a price for `asset`. Every read then reverts.
-    /// @dev Delisting a market in PillarCore is the usual path; this is the
+    /// @dev Delisting a market in PyrisCore is the usual path; this is the
     ///      blunter one, for a feed that has been retired by its operator.
     function removeFeed(address asset) external onlyOwner {
         if (address(_feeds[asset].aggregator) == address(0)) revert UnknownAsset(asset);
@@ -94,3 +94,4 @@ contract ChainlinkOracle is IPriceOracle, Ownable2Step {
         updatedAt = ts;
     }
 }
+

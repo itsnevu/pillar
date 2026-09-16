@@ -3,30 +3,28 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { PillarMark } from "@/components/Header";
+import { PyrisMark } from "@/components/Header";
 import { ConnectButton } from "@/components/ConnectButton";
-import { pillarChain } from "@/lib/chain";
-import { hasDeployment } from "@/lib/contracts";
+import { pyrisChain } from "@/lib/chain";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const path = usePathname();
   const nav = [
-    { label: "Portfolio", href: "/app", active: path === "/app" },
-    { label: "Markets", href: "/#markets", active: path.startsWith("/app/") },
+    { label: "Dashboard", href: "/app", active: path === "/app" },
+    { label: "Public Pacts", href: "/#pacts", active: false },
+    { label: "Documentation", href: "/docs", active: path === "/docs" },
   ];
   return (
     <div className="flex-1 bg-bg text-ink">
       <div className="bg-soft text-center text-[12.5px] py-[7px] px-4 text-muted">
-        <span className="font-semibold text-ink">Pillar is in open beta.</span> Start with small amounts.
-        {!hasDeployment && (
-          <span className="ml-2 text-accent-dark">No deployment found — run `npm run deploy:local` then `npm run abi:sync`.</span>
-        )}
+        <span className="font-semibold text-ink">Pyris Pact is in open beta.</span> Programmable B2B
+        milestone escrow & settlement on Arc Chain.
       </div>
       <header className="mx-auto w-full max-w-[1040px] px-5 sm:px-6">
         <div className="flex items-center justify-between h-[88px]">
           <Link href="/" className="flex items-center gap-2.5">
-            <PillarMark />
-            <span className="font-serif text-[24px] leading-none tracking-tight text-ink">pillar.</span>
+            <PyrisMark />
+            <span className="font-serif text-[24px] leading-none tracking-tight text-ink">pyris pact.</span>
           </Link>
           <nav className="hidden md:flex items-center gap-7 text-[14px]">
             {nav.map((n) => (
@@ -43,7 +41,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-3">
             <span className="hidden sm:inline-flex items-center gap-2 rounded-pill border border-line bg-surface px-3 h-9 text-[13px] text-ink">
               <span className="inline-block size-2 rounded-full bg-accent" />
-              {pillarChain.name}
+              {pyrisChain.name}
             </span>
             <ConnectButton />
           </div>

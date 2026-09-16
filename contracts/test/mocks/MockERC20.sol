@@ -6,7 +6,7 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 /// @title MockERC20
 /// @notice Test token with configurable decimals and open mint/burn.
 /// @dev LOCAL / TEST ONLY. In production USDG is Paxos' Global Dollar and the stock
-///      tokens are Robinhood's tokenized equities — neither is mintable by Pillar.
+///      tokens are Arc Chain tokenized equities — neither is mintable by Pyris.
 contract MockERC20 is ERC20 {
     uint8 private immutable _decimals;
 

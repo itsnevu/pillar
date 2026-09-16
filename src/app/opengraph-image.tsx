@@ -1,10 +1,10 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Pillar — never sell, never repay.";
+export const alt = "Pyris Pact — Programmable B2B Payments on Arc Chain.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-/** Social card. Kept to system fonts and flat shapes so it renders without a font fetch. */
+/** Social card for Pyris Pact. */
 export default function Image() {
   return new ImageResponse(
     (
@@ -22,7 +22,7 @@ export default function Image() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          {/* The pillar mark, redrawn inline: satori cannot fetch the SVG file. */}
+          {/* The pyris mark, redrawn inline */}
           <svg width="46" height="46" viewBox="0 0 36 36" fill="#292524">
             <rect x="4" y="4" width="28" height="4.2" rx="0.6" />
             <path d="M7 8.2h22l-2.6 3.6H9.6Z" />
@@ -32,16 +32,35 @@ export default function Image() {
             <path d="M9.6 26.4h16.8l2.6 3.4H7Z" />
             <rect x="4" y="29.8" width="28" height="3.6" rx="0.6" />
           </svg>
-          <div style={{ fontSize: 42, letterSpacing: -1 }}>pillar.</div>
+          <div style={{ fontSize: 42, letterSpacing: -1 }}>pyris pact.</div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
-          <div style={{ fontSize: 84, lineHeight: 1.05, letterSpacing: -2 }}>Never sell. Never repay.</div>
-          <div style={{ fontSize: 32, lineHeight: 1.4, color: "#57534e", maxWidth: 900, fontFamily: "Helvetica, sans-serif" }}>
-            Borrow USDG against tokenized stocks and let the yield repay the loan for you.
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <div style={{ fontSize: 76, lineHeight: 1.05, letterSpacing: -2 }}>
+            Programmable B2B Payments.
+          </div>
+          <div
+            style={{
+              fontSize: 30,
+              lineHeight: 1.4,
+              color: "#57534e",
+              maxWidth: 920,
+              fontFamily: "Helvetica, sans-serif",
+            }}
+          >
+            Lock USDC into trustless milestone escrows. Instant settlements and native USDC gas fees on Arc Chain.
           </div>
         </div>
-        <div style={{ display: "flex", fontSize: 24, color: "#57534e", fontFamily: "Helvetica, sans-serif" }}>
-          Self-repaying collateral credit · Robinhood Chain
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontSize: 22,
+            color: "#78716c",
+            fontFamily: "Helvetica, sans-serif",
+          }}
+        >
+          <span>Zero wire delays · 0% platform fee in beta</span>
+          <span>pyris.tech</span>
         </div>
       </div>
     ),

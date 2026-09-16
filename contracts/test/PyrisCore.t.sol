@@ -5,18 +5,18 @@ import {Test} from "forge-std/Test.sol";
 import {MockERC20} from "./mocks/MockERC20.sol";
 import {MockOracle} from "./mocks/MockOracle.sol";
 import {MockYieldSource} from "./mocks/MockYieldSource.sol";
-import {PillarCore} from "../src/PillarCore.sol";
+import {PyrisCore} from "../src/PyrisCore.sol";
 import {IYieldSource} from "../src/IYieldSource.sol";
 import {IPriceOracle} from "../src/IPriceOracle.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
-contract PillarCoreTest is Test {
+contract PyrisCoreTest is Test {
     MockERC20 usdg;
     MockERC20 aapl;
     MockERC20 tsla;
     MockOracle oracle;
     MockYieldSource ys;
-    PillarCore core;
+    PyrisCore core;
 
     address owner = address(this);
     address alice = makeAddr("alice");
@@ -38,7 +38,7 @@ contract PillarCoreTest is Test {
         oracle.setPrice(address(aapl), AAPL_PRICE);
         oracle.setPrice(address(tsla), 368.16e18);
         ys = new MockYieldSource(owner, usdg, IPriceOracle(address(oracle)), RATE_8PCT);
-        core = new PillarCore(owner, usdg, IPriceOracle(address(oracle)), feeRecipient);
+        core = new PyrisCore(owner, usdg, IPriceOracle(address(oracle)), feeRecipient);
 
         core.listMarket(address(aapl), 4000, 5000, 500, 0, IYieldSource(address(ys)));
         core.listMarket(address(tsla), 3000, 4000, 500, 1_000e18, IYieldSource(address(ys)));
@@ -100,21 +100,21 @@ contract PillarCoreTest is Test {
 
     function test_deposit_revertsZero() public {
         vm.prank(alice);
-        vm.expectRevert(PillarCore.ZeroAmount.selector);
+        vm.expectRevert(PyrisCore.ZeroAmount.selector);
         core.depositCollateral(address(aapl), 0);
     }
 
     function test_deposit_revertsUnlisted() public {
         MockERC20 x = new MockERC20("X", "X", 18);
         vm.prank(alice);
-        vm.expectRevert(PillarCore.MarketNotListed.selector);
+        vm.expectRevert(PyrisCore.MarketNotListed.selector);
         core.depositCollateral(address(x), 1);
     }
 
     function test_deposit_respectsCap() public {
         vm.startPrank(alice);
         core.depositCollateral(address(tsla), 1_000e18);
-        vm.expectRevert(abi.encodeWithSelector(PillarCore.CapExceeded.selector, 1_000e18));
+        vm.expectRevert(abi.encodeWithSelector(PyrisCore.CapExceeded.selector, 1_000e18));
         core.depositCollateral(address(tsla), 1);
         vm.stopPrank();
     }
@@ -145,7 +145,7 @@ contract PillarCoreTest is Test {
     function test_withdraw_revertsInsufficientCollateral() public {
         _depositAndBorrow(alice, COLL, 0);
         vm.prank(alice);
-        vm.expectRevert(PillarCore.InsufficientCollateral.selector);
+        vm.expectRevert(PyrisCore.InsufficientCollateral.selector);
         core.withdrawCollateral(address(aapl), COLL + 1);
     }
 
@@ -163,7 +163,7 @@ contract PillarCoreTest is Test {
         vm.startPrank(alice);
         core.depositCollateral(address(aapl), COLL);
         // 1 bps of LTV here is ~3.13 USDG; +4 USDG -> 12508.8/31262 = 40.013% -> 4001 bps.
-        vm.expectRevert(abi.encodeWithSelector(PillarCore.ExceedsMaxLtv.selector, 4001, 4000));
+        vm.expectRevert(abi.encodeWithSelector(PyrisCore.ExceedsMaxLtv.selector, 4001, 4000));
         core.borrow(address(aapl), MAX_BORROW + 4e6);
         vm.stopPrank();
     }
@@ -180,7 +180,7 @@ contract PillarCoreTest is Test {
         core.withdrawTreasury(owner, TREASURY - 1_000e6);
         vm.startPrank(alice);
         core.depositCollateral(address(aapl), COLL);
-        vm.expectRevert(abi.encodeWithSelector(PillarCore.InsufficientTreasury.selector, 1_000e6));
+        vm.expectRevert(abi.encodeWithSelector(PyrisCore.InsufficientTreasury.selector, 1_000e6));
         core.borrow(address(aapl), 1_001e6);
         vm.stopPrank();
     }
@@ -189,7 +189,7 @@ contract PillarCoreTest is Test {
         core.closeMarket(address(aapl));
         vm.startPrank(alice);
         core.depositCollateral(address(aapl), COLL); // deposits still fine
-        vm.expectRevert(PillarCore.MarketClosed.selector);
+        vm.expectRevert(PyrisCore.MarketClosed.selector);
         core.borrow(address(aapl), 1e6);
         vm.stopPrank();
         core.openMarket(address(aapl));
@@ -199,7 +199,7 @@ contract PillarCoreTest is Test {
 
     function test_borrow_revertsWhenNoCollateral() public {
         vm.prank(alice);
-        vm.expectRevert(abi.encodeWithSelector(PillarCore.ExceedsMaxLtv.selector, type(uint256).max, 4000));
+        vm.expectRevert(abi.encodeWithSelector(PyrisCore.ExceedsMaxLtv.selector, type(uint256).max, 4000));
         core.borrow(address(aapl), 1e6);
     }
 
@@ -210,7 +210,7 @@ contract PillarCoreTest is Test {
         oracle.markStale(address(aapl));
         assertFalse(core.isPriceFresh(address(aapl)));
         vm.prank(alice);
-        vm.expectRevert(abi.encodeWithSelector(PillarCore.StalePrice.selector, 0));
+        vm.expectRevert(abi.encodeWithSelector(PyrisCore.StalePrice.selector, 0));
         core.borrow(address(aapl), 1e6);
     }
 
@@ -218,7 +218,7 @@ contract PillarCoreTest is Test {
         _depositAndBorrow(alice, COLL, 1_000e6);
         oracle.markStale(address(aapl));
         vm.startPrank(alice);
-        vm.expectRevert(abi.encodeWithSelector(PillarCore.StalePrice.selector, 0));
+        vm.expectRevert(abi.encodeWithSelector(PyrisCore.StalePrice.selector, 0));
         core.withdrawCollateral(address(aapl), 1e18);
         core.repay(address(aapl), 1_000e6);
         core.withdrawCollateral(address(aapl), COLL); // no debt -> allowed even if stale
@@ -263,7 +263,7 @@ contract PillarCoreTest is Test {
         uint256 treasuryBefore = core.treasury();
 
         vm.expectEmit(true, true, false, false);
-        emit PillarCore.SelfRepaid(alice, address(aapl), 0, 0);
+        emit PyrisCore.SelfRepaid(alice, address(aapl), 0, 0);
         core.harvest(address(aapl), alice);
 
         uint256 cut = pending / 10;
@@ -400,14 +400,14 @@ contract PillarCoreTest is Test {
         _setupUnderwater();
         uint256 maxRepay = core.maxLiquidatable(alice, address(aapl));
         vm.prank(liquidator);
-        vm.expectRevert(abi.encodeWithSelector(PillarCore.OverLiquidation.selector, maxRepay));
+        vm.expectRevert(abi.encodeWithSelector(PyrisCore.OverLiquidation.selector, maxRepay));
         core.liquidate(alice, address(aapl), maxRepay + 1);
     }
 
     function test_liquidate_revertsWhenHealthy() public {
         _depositAndBorrow(alice, COLL, MAX_BORROW);
         vm.prank(liquidator);
-        vm.expectRevert(abi.encodeWithSelector(PillarCore.Healthy.selector, 1.25e18));
+        vm.expectRevert(abi.encodeWithSelector(PyrisCore.Healthy.selector, 1.25e18));
         core.liquidate(alice, address(aapl), 1e6);
         assertEq(core.maxLiquidatable(alice, address(aapl)), 0);
     }
@@ -429,7 +429,7 @@ contract PillarCoreTest is Test {
         _setupUnderwater();
         oracle.markStale(address(aapl));
         vm.prank(liquidator);
-        vm.expectRevert(abi.encodeWithSelector(PillarCore.StalePrice.selector, 0));
+        vm.expectRevert(abi.encodeWithSelector(PyrisCore.StalePrice.selector, 0));
         core.liquidate(alice, address(aapl), 1e6);
     }
 
@@ -478,18 +478,18 @@ contract PillarCoreTest is Test {
         core.openMarket(address(aapl));
         vm.stopPrank();
         vm.prank(bob);
-        vm.expectRevert(PillarCore.NotKeeperOrOwner.selector);
+        vm.expectRevert(PyrisCore.NotKeeperOrOwner.selector);
         core.pause();
     }
 
     function test_listMarket_rejectsBadParams() public {
         MockERC20 x = new MockERC20("X", "X", 18);
         IYieldSource s = IYieldSource(address(ys));
-        vm.expectRevert(PillarCore.InvalidParams.selector);
+        vm.expectRevert(PyrisCore.InvalidParams.selector);
         core.listMarket(address(x), 5000, 4000, 500, 0, s); // ltv >= threshold
-        vm.expectRevert(PillarCore.InvalidParams.selector);
+        vm.expectRevert(PyrisCore.InvalidParams.selector);
         core.listMarket(address(x), 9000, 9600, 500, 0, s); // LT*(1+bonus) >= 1
-        vm.expectRevert(PillarCore.MarketAlreadyListed.selector);
+        vm.expectRevert(PyrisCore.MarketAlreadyListed.selector);
         core.listMarket(address(aapl), 4000, 5000, 500, 0, s);
     }
 
@@ -597,3 +597,4 @@ contract PillarCoreTest is Test {
         core.liquidate(alice, address(aapl), maxRepay); // either healthy now or over-liquidation
     }
 }
+

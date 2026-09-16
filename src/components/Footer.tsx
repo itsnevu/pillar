@@ -50,7 +50,7 @@ function KyberSwapLogo() {
 
 /** Social entries are dropped when the handle is not configured yet. */
 const FOOTER_LINKS: { href: string; label: string }[] = [
-  { href: LINKS.support, label: "support@pillar.finance" },
+  { href: LINKS.support, label: "support@pyris.tech" },
   { href: LINKS.blog, label: "Blog" },
   { href: LINKS.docs, label: "Documentation" },
   { href: LINKS.whitepaper, label: "Whitepaper" },
@@ -76,7 +76,7 @@ export function Footer() {
         </div>
       </section>
       <div className="rusd-frame rusd-footer-inner">
-        <span>Self-repaying collateral credit · Robinhood Chain</span>
+        <span>Programmable B2B payments & milestone escrow · Arc Chain</span>
         <div className="rusd-footer-links">
           {FOOTER_LINKS.map((l) => (
             <a className="rusd-text-link" href={l.href} key={l.label}>

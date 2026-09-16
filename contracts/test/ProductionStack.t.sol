@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import {Test} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
-import {PillarCore} from "../src/PillarCore.sol";
+import {PyrisCore} from "../src/PyrisCore.sol";
 import {ChainlinkOracle} from "../src/ChainlinkOracle.sol";
 import {ERC4626YieldSource} from "../src/ERC4626YieldSource.sol";
 import {IAggregatorV3} from "../src/IAggregatorV3.sol";
@@ -18,15 +18,15 @@ import {StubRouter} from "./mocks/StubRouter.sol";
 
 /// @title ProductionStack
 /// @notice The whole protocol wired with the contracts that will actually be deployed:
-///         PillarCore over ChainlinkOracle over a real Chainlink feed shape, and
+///         PyrisCore over ChainlinkOracle over a real Chainlink feed shape, and
 ///         ERC4626YieldSource over a genuine ERC-4626 vault. Nothing under `src/` is
-///         a mock; the only stand-ins are the external systems Pillar does not own —
+///         a mock; the only stand-ins are the external systems Pyris does not own —
 ///         the aggregator, the vault, the swap venue and the tokens.
 ///
 ///         The claim this file exists to prove is the one on the landing page: the
 ///         yield repays the loan, and the borrower never makes a payment.
 contract ProductionStackTest is Test {
-    PillarCore core;
+    PyrisCore core;
     ChainlinkOracle oracle;
     ERC4626YieldSource ys;
 
@@ -62,7 +62,7 @@ contract ProductionStackTest is Test {
         );
         ys.setVault(address(aapl), IERC4626(address(vault)));
 
-        core = new PillarCore(owner, IERC20(address(usdg)), IPriceOracle(address(oracle)), feeRecipient);
+        core = new PyrisCore(owner, IERC20(address(usdg)), IPriceOracle(address(oracle)), feeRecipient);
         core.listMarket(address(aapl), 4000, 5000, 500, 0, IYieldSource(address(ys)));
         vm.stopPrank();
 
@@ -156,7 +156,7 @@ contract ProductionStackTest is Test {
         vm.prank(alice);
         core.borrow(address(aapl), 5_000e6);
 
-        // The feed stops publishing; PillarCore's own staleness window lapses.
+        // The feed stops publishing; PyrisCore's own staleness window lapses.
         skip(2 hours);
 
         vm.prank(alice);
@@ -178,7 +178,7 @@ contract ProductionStackTest is Test {
 
     /// @dev A feed reporting a broken answer takes the whole market offline rather
     ///      than letting anyone act on the number. The revert propagates from
-    ///      ChainlinkOracle through PillarCore.
+    ///      ChainlinkOracle through PyrisCore.
     function test_brokenFeedAnswerHaltsTheMarket() public {
         feed.setAnswer(0);
         vm.expectRevert(abi.encodeWithSelector(ChainlinkOracle.InvalidAnswer.selector, address(aapl), int256(0)));
@@ -239,3 +239,4 @@ contract ProductionStackTest is Test {
         assertLt(_debt(), 10_000e6);
     }
 }
+

@@ -16,7 +16,7 @@ import {ISwapRouter} from "./ISwapRouter.sol";
 ///         vault (a Mosaic vault, a lending-pool wrapper — anything that speaks the
 ///         standard), and the share appreciation above the deposited principal is
 ///         the yield.
-/// @dev The shape PillarCore expects is "principal in the collateral asset, yield in
+/// @dev The shape PyrisCore expects is "principal in the collateral asset, yield in
 ///      USDG". A real vault pays yield in the collateral asset instead, so this
 ///      adapter does the conversion: on `harvest` it redeems exactly the surplus,
 ///      swaps it to USDG through a router, and hands the USDG to the caller.
@@ -27,7 +27,7 @@ import {ISwapRouter} from "./ISwapRouter.sol";
 ///      directions: if the vault loses value the surplus is zero and nothing is
 ///      harvested, rather than the adapter inventing a number.
 ///
-///      Accounting is per (asset, account). PillarCore is the only account in
+///      Accounting is per (asset, account). PyrisCore is the only account in
 ///      practice; it tracks per-user shares itself.
 contract ERC4626YieldSource is IYieldSource, Ownable2Step, ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -240,7 +240,7 @@ contract ERC4626YieldSource is IYieldSource, Ownable2Step, ReentrancyGuard {
 
     /// @dev `amount` of `asset` valued in USDG at the oracle price. Staleness is
     ///      irrelevant here: this figure only ever bounds a swap or feeds the UI,
-    ///      and PillarCore applies the staleness rule to the actions that matter.
+    ///      and PyrisCore applies the staleness rule to the actions that matter.
     function _quoteUsdg(address asset, uint256 amount) internal view returns (uint256) {
         if (amount == 0) return 0;
         if (asset == address(usdg)) return amount;
@@ -267,3 +267,4 @@ contract ERC4626YieldSource is IYieldSource, Ownable2Step, ReentrancyGuard {
         IERC20(asset).forceApprove(address(r), 0);
     }
 }
+

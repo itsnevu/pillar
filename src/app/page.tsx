@@ -1,4 +1,4 @@
-import "../styles/pillar.css";
+import "../styles/pyris.css";
 
 import { Banner, Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";

@@ -2,17 +2,16 @@ import Link from "next/link";
 import { ProsePage, Section } from "@/components/ProsePage";
 
 export const metadata = {
-  title: "Risk — Pillar Finance",
+  title: "Risk — Pyris Pact",
   description:
-    "The honest limits of a self-repaying loan: yield can stop, collateral markets close while the loan stays live, liquidation is partial but real.",
+    "The honest limits of programmable milestone escrow: irreversible releases, deadline timeout rules, and smart contract execution parameters on Arc Chain.",
 };
 
 const TOC = [
-  { id: "yield-can-stop", heading: "Yield can stop" },
-  { id: "markets-close", heading: "The market closes; your loan does not" },
-  { id: "liquidation", heading: "Liquidation is partial, but real" },
-  { id: "stale-oracles", heading: "Oracles can go stale" },
-  { id: "contract-risk", heading: "Contract and counterparty risk" },
+  { id: "irreversible-release", heading: "Releases are permanent and irreversible" },
+  { id: "deadline-rules", heading: "Deadlines, timeouts, and refunds" },
+  { id: "disputes", heading: "Offchain quality and subjective disputes" },
+  { id: "contract-risk", heading: "Smart contract execution on Arc Chain" },
 ];
 
 export default function Page() {
@@ -20,67 +19,54 @@ export default function Page() {
     <ProsePage
       eyebrow="Risk disclosure"
       title="What can go wrong"
-      lede="Every limit of the product, stated in one place rather than scattered through the marketing."
-      meta={["Updated 10 September 2026"]}
+      lede="Every constraint and failure mode of milestone escrow, stated with complete clarity."
+      meta={["Updated 16 September 2026"]}
       toc={TOC}
     >
-      <Section id="yield-can-stop" heading="Yield can stop, and then so does the repayment">
+      <Section id="irreversible-release" heading="Releases are permanent and irreversible">
         <p>
-          A self-repaying loan repays itself at the speed the collateral earns, and no faster. If the yield rate
-          goes to zero your debt stops shrinking. It does not grow — Pillar charges no interest and nothing accrues
-          against you — but it does not disappear either. Any estimate of time-to-zero on the dashboard is a
-          projection from the current rate, not a promise.
+          Once a client triggers <code>releaseFunds(pactId)</code>, the transaction immediately transfers
+          the locked USDC into the contractor&apos;s wallet. Blockchain transactions on Arc Chain are final
+          and cannot be clawed back, cancelled, or reversed by the Pyris team or any centralized authority.
+        </p>
+        <p>
+          Clients must thoroughly inspect submitted deliverables (code, design files, or reports) before
+          authorizing release.
         </p>
       </Section>
 
-      <Section id="markets-close" heading="The collateral market closes; your loan does not">
+      <Section id="deadline-rules" heading="Deadlines, timeouts, and refunds">
         <p>
-          A tokenized equity tracks a market that shuts on Friday afternoon and does not reopen until Monday. Your
-          loan stays live every second in between. On Monday that stock can open well below Friday&apos;s close on an
-          earnings miss or an overnight headline, with no window in which anyone could have traded out of the way.
+          Every pact is initialized with a UNIX deadline. If that timestamp passes and the contractor has
+          not called <code>submitWork()</code>, the smart contract allows the client to reclaim 100% of
+          their escrowed funds via <code>refund()</code>.
         </p>
         <p>
-          There is no mechanism that removes this — not a faster oracle and not a dynamic curve. The only honest
-          response is to lend less against it, which is why maximum loan-to-value sits at 30–50% depending on the
-          market and why a broad ETF is allowed more than a single company. Conservative limits reduce the risk.
-          They do not remove it.
+          Contractors must ensure their deliverables are formally submitted onchain prior to the deadline
+          timestamp to prevent automatic refund eligibility.
         </p>
       </Section>
 
-      <Section id="liquidation" heading="Liquidation is partial, but it is real">
+      <Section id="disputes" heading="Offchain quality and subjective disputes">
         <p>
-          When a position becomes unhealthy, the contract computes the smallest repayment that restores it to health
-          and reverts any liquidation attempting to seize more. You lose a slice, not the position. That is a
-          constraint enforced in the contract rather than a policy we promise to follow — but you can still lose
-          part of your collateral, and a large enough gap can move a healthy position to an unhealthy one between
-          blocks.
+          Smart contracts verify signatures and deadlines; they cannot autonomously judge the qualitative
+          elegance of code, design, or written copy.
         </p>
         <p>
-          Your health factor, current loan-to-value, and the percentage the price would have to fall before
-          liquidation are shown continuously on the <Link href="/app">dashboard</Link>.
+          If deliverables diverge from the original agreed specifications, either party may flag the pact
+          as <strong>Disputed</strong>. Pyris Pact provides onchain record-keeping, but parties should
+          maintain clear written specifications and agreed revision rounds.
         </p>
       </Section>
 
-      <Section id="stale-oracles" heading="Oracles can go stale">
+      <Section id="contract-risk" heading="Smart contract execution on Arc Chain">
         <p>
-          When a price feed is stale, Pillar blocks new borrows and collateral withdrawals, because those are the
-          actions that could exploit a wrong number. Repayment, deposits, and the yield harvest are never blocked —
-          a user should never be locked out of making their own position safer. The cost of this is that borrowing
-          may be unavailable for a period you did not choose.
-        </p>
-      </Section>
-
-      <Section id="contract-risk" heading="Smart contract and counterparty risk">
-        <p>
-          Pillar is software. Bugs in the protocol, in the yield source it routes collateral to, in the oracle it
-          reads, or in the token contracts themselves can cause loss. The USDG you borrow comes from a treasury the
-          protocol holds; borrowing depends on that treasury having a balance. Yield depends on an external venue
-          continuing to produce it.
+          Pyris Pact executes on <code>PyrisPact.sol</code>. While the contract has been stripped of complex
+          oracle and DEX dependencies for maximal security, software bugs or network-level delays can occur.
         </p>
         <p>
           The protocol is in open beta. Start with small amounts. See also the{" "}
-          <Link href="/terms">terms</Link> and the{" "}
-          <Link href="/docs">documentation</Link>.
+          <Link href="/terms">terms of use</Link> and <Link href="/docs">documentation</Link>.
         </p>
       </Section>
     </ProsePage>

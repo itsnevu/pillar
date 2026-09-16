@@ -1,35 +1,30 @@
-/**
- * The three operations a position goes through, in the order they happen.
- * Uses Turret's `rusd-explainer` / `rusd-borrow-flow` pair, which lays out
- * exactly three numbered steps — so this list is three items by construction.
- */
 export function HowItWorks() {
   return (
     <section className="rusd-explainer" id="how" aria-labelledby="how-heading">
       <div className="rusd-explainer-heading">
-        <h2 id="how-heading">How it works</h2>
-        <p>Three steps. Only the first two are yours.</p>
+        <h2 id="how-heading">How Pyris Pact works</h2>
+        <p>Three simple steps. Trustless milestone escrow from agreement to settlement.</p>
       </div>
       <ol className="rusd-borrow-flow">
         <li>
-          <strong>Deposit your stock tokens</strong>
+          <strong>1. Fund the Milestone (Client)</strong>
           <p>
-            They become collateral and go straight to a yield vault. Nothing sits idle while it backs
-            your loan, and no oracle is needed to deposit.
+            Deposit USDC into smart contract escrow. Specify contractor address, deliverable scope,
+            and deadline. Funds remain locked and safe in Arc Chain&apos;s smart contract.
           </p>
         </li>
         <li>
-          <strong>Borrow USDG against them</strong>
+          <strong>2. Submit Proof of Work (Contractor)</strong>
           <p>
-            Up to that market&apos;s max LTV, drawn from the protocol treasury. No interest, no
-            schedule, no maturity date — nothing accrues against you.
+            The contractor executes the project and posts proof of completion (GitHub PR, Figma design,
+            or deliverable note) directly onchain for instant client review.
           </p>
         </li>
         <li>
-          <strong>The yield pays it down</strong>
+          <strong>3. One-Click Instant Payout</strong>
           <p>
-            Anyone can harvest a position. Pillar takes 10% of the yield; the rest goes onto your debt.
-            You are not required to do anything at all.
+            The client reviews the submitted deliverable and approves payment with one click. USDC is
+            transferred directly to the contractor with sub-second Arc Chain finality.
           </p>
         </li>
       </ol>

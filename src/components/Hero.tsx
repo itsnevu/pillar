@@ -4,31 +4,48 @@ function ArrowIcon() {
   return (
     <svg aria-hidden="true" fill="none" height="20" viewBox="0 0 24 24" width="20">
       <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M9.5 12h5m-2-2.25L14.75 12l-2.25 2.25" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+      <path
+        d="M9.5 12h5m-2-2.25L14.75 12l-2.25 2.25"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+      />
     </svg>
   );
 }
 
-/**
- * These were buttons declaring `aria-haspopup="dialog"` with no handler: they
- * promised a video and did nothing. The explanations exist now as pages, so they
- * are links to them, and the icon says "go" rather than "play".
- */
 const EXPLAINERS = [
-  { label: "How self-repay works", href: "/docs#the-loop" },
-  { label: "How collateral earns", href: "/whitepaper#yield" },
+  { label: "How milestone escrow works", href: "/docs#escrow-flow" },
+  { label: "Why Arc Chain USDC gas", href: "/docs#arc-chain" },
 ];
 
 export function Hero() {
   return (
     <section className="rusd-hero borrow-hero">
       <div className="rusd-hero-message">
-        <h1>Never sell. Never repay.</h1>
+        <h1>Programmable B2B Payments.</h1>
         <p className="rusd-hero-copy">
-          Borrow USDG against your Robinhood Crypto tokenized stocks and let the yield repay the loan for
-          you. Your position stays open the entire time.
+          Lock USDC into trustless milestone escrows for your contractors, freelancers, and agencies.
+          Funds disburse immediately upon deliverable approval. Native USDC gas, zero wire delays, and
+          cryptographic settlement on Arc Chain.
         </p>
-        <nav className="borrow-hero-videos" aria-label="Loan explainers">
+        <div style={{ display: "flex", gap: "12px", alignItems: "center", marginTop: "16px", marginBottom: "8px" }}>
+          <Link
+            href="/app"
+            className="dockyard-wallet-button"
+            style={{
+              padding: "10px 22px",
+              fontSize: "14px",
+              fontWeight: 600,
+              textDecoration: "none",
+              display: "inline-block",
+            }}
+          >
+            Launch Pact Dashboard →
+          </Link>
+        </div>
+        <nav className="borrow-hero-videos" aria-label="Escrow explainers">
           {EXPLAINERS.map(({ label, href }) => (
             <div className="_action_coq5c_144" key={label}>
               <Link className="rusd-text-link _trigger_coq5c_1" href={href}>
@@ -46,17 +63,17 @@ export function Hero() {
           alt=""
           width={1536}
           height={1024}
-          src="/illustrations/pillar-column.svg"
+          src="/illustrations/pyris-column.svg"
         />
         <div
           className="rusd-position-path"
           role="img"
-          aria-label="Deposit stock tokens as collateral and borrow USDG against them"
+          aria-label="Client deposits USDC into milestone escrow and releases funds upon completed deliverable"
         >
           <div className="rusd-position-node">
-            <span>You deposit</span>
-            <strong>Stock tokens</strong>
-            <small>Collateral</small>
+            <span>Client deposits</span>
+            <strong>USDC</strong>
+            <small>Locked Escrow</small>
           </div>
           <span aria-hidden="true" className="rusd-position-route">
             <svg fill="none" viewBox="0 0 40 40">
@@ -65,15 +82,17 @@ export function Hero() {
             </svg>
           </span>
           <div className="rusd-position-node">
-            <span>You borrow</span>
-            <strong>USDG</strong>
-            <small>Stablecoin</small>
+            <span>Contractor receives</span>
+            <strong>Instant Payout</strong>
+            <small>Direct to Wallet</small>
           </div>
         </div>
-        <figcaption>Your collateral earns while it backs the loan. That yield is applied to your debt.</figcaption>
+        <figcaption>
+          Funds remain locked in PyrisPact.sol until deliverables are reviewed and signed off by the client.
+        </figcaption>
         <div className="rusd-position-safeguards">
-          <span>Loan terms apply</span>
-          <span>Availability varies</span>
+          <span>Sub-second Arc settlement</span>
+          <span>Native USDC gas fee</span>
         </div>
       </figure>
     </section>

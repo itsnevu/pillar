@@ -21,7 +21,7 @@ contract ERC4626YieldSourceTest is Test {
     StubRouter router;
 
     address owner = address(0xA11CE);
-    address core = address(0xC0BE); // stands in for PillarCore, the only real account
+    address core = address(0xC0BE); // stands in for PyrisCore, the only real account
     address stranger = address(0xBEEF);
 
     uint256 constant PRICE = 300e18; // $300 per AAPL

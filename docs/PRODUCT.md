@@ -1,51 +1,43 @@
-# 🏛️ Pillar Finance — Self-Repaying Credit
+# 🏛️ Pyris Pact — Programmable B2B Payments on Arc Chain
 
-> Jangan jual. Pinjam di atasnya, biarkan dia yang melunasi.
+> Milestone escrow & trustless settlement in pure USDC.
 
 ## Apa ini
-Kamu setor **tokenized stocks** (Robinhood Crypto) sebagai jaminan. Kamu pinjam **USDG** di atasnya.
-Jaminanmu bekerja menghasilkan yield, dan **yield itu yang melunasi utangmu** — bukan kamu.
-Tidak ada cicilan, tidak ada jatuh tempo. Waktu yang membayar.
+Platform pembayaran dan escrow berbasis smart contract untuk bisnis, agency, dan freelancer/kontraktor global.
+Klien mengunci dana **USDC** ke dalam escrow milestone sebelum proyek dikerjakan. Begitu pekerjaan selesai dan disetujui, dana dicairkan langsung ke wallet kontraktor tanpa perantara.
 
-## Analogi nama
-Pilar adalah bagian bangunan yang **tidak pernah kamu bongkar** untuk dapat material.
-Portofolio yang kamu yakini seharusnya diperlakukan sama.
+## Keunggulan Utama
+1. **Native USDC Gas Fee di Arc Chain**:
+   Arc Chain menggunakan USDC sebagai token gas fee native. Pengguna tidak perlu membeli ETH atau token volatil lainnya. Semua transaksi (dana kontrak & biaya gas) 100% menggunakan USDC.
+2. **0% Potongan Platform (Beta)**:
+   Tidak ada potongan komisi 10%–20% seperti platform freelance konvensional (Upwork, Freelancer, Escrow.com).
+3. **Instan & Tanpa Wire Delay**:
+   Pencairan dana terjadi dalam hitungan sub-detik begitu disetujui klien, menggantikan wire transfer internasional yang memakan waktu 3–5 hari kerja.
+4. **Proteksi Dua Arah**:
+   - Kontraktor terlindungi: dana terbukti terkunci di smart contract sebelum mulai bekerja.
+   - Klien terlindungi: jika deadline lewat tanpa deliverable, dana dapat di-refund 100%.
 
-## Masalah yang diselesaikan
-Menjual aset yang kamu yakini demi kebutuhan tunai adalah kekalahan paling mahal dalam investing.
-Pillar memberi likuiditas **tanpa menutup posisi**.
-
-## Cara kerja
+## Alur Kerja
 ```
-Deposit stock token  →  jadi jaminan
-        ↓
-Jaminan disalurkan ke sumber yield (Mosaic / lending pool)
-        ↓
-Pinjam USDG (LTV konservatif 30–50% per market)
-        ↓
-harvest(): yield → potongan protokol 10% → sisanya melunasi utang otomatis
-        ↓
-Utang lunas → jaminan kembali utuh, posisi tidak pernah dijual
-```
-
-## Aturan jujur
-- Yield nol → utang berhenti menyusut, tapi **tidak pernah bertambah** (Pillar tidak mengenakan bunga).
-- Saham tutup, utang hidup 24/7 → LTV sengaja konservatif.
-- Oracle basi → **borrow & withdraw diblokir**, repay/harvest/deposit tetap jalan.
-- Likuidasi **parsial**: hanya irisan terkecil yang memulihkan health factor; over-liquidate → revert.
-
-## Produk
-- Vault jaminan + credit line USDG (`PillarCore`)
-- Auto-repay engine (`harvest`)
-- Dashboard `/app`: LTV, sisa utang, yield yang sudah melunasi, estimasi waktu lunas, jarak ke likuidasi
-- Market page `/app/<TICKER>`: deposit / borrow / repay / withdraw / harvest
-
-## Posisi di ekosistem
-```
-Prism  → menciptakan aset (index token)
-Pillar → menjadikannya jaminan produktif
-Mosaic → menghasilkan yield yang melunasi utangnya
+1. Klien membuat Pact + Kunci USDC ke Escrow
+                 ↓
+2. Kontraktor mengerjakan proyek & submit proof-of-work di onchain
+                 ↓
+3. Klien memeriksa hasil & klik "Release Funds"
+                 ↓
+4. USDC instan masuk ke wallet kontraktor (0% platform cut)
 ```
 
-## Tech
-Lihat `contracts/` (Foundry) dan `README.md` untuk cara jalankan lokal (anvil → deploy → abi:sync → dev).
+## Smart Contract (`PyrisPact.sol`)
+- `createPact(...)`: Klien mengunci USDC.
+- `submitWork(...)`: Kontraktor menyematkan bukti deliverable (PR GitHub / link Figma).
+- `releaseFunds(...)`: Klien menyetujui dan mencairkan pembayaran.
+- `refund(...)`: Refund otomatis jika deadline lewat, atau pembatalan sukarela dari kontraktor.
+- `dispute(...)`: Menandai sengketa jika deliverable tidak sesuai spesifikasi.
+
+## Frontend
+- Dashboard `/app`:
+  - Ringkasan statistik (Volume Escrow, Active, Settled).
+  - Filter: All Pacts, Outgoing (Klien), Incoming (Kontraktor).
+  - Modal Create Pact dan tombol aksi satu klik.
+- Detail `/app/[asset]`: Inspeksi detail deliverable, info onchain, dan eksekusi rilis/refund.

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import "@/styles/pillar.css";
+import "@/styles/pyris.css";
 import "@/styles/prose.css";
 
 import { Banner, Header } from "@/components/Header";
@@ -7,9 +7,9 @@ import { Footer } from "@/components/Footer";
 import { allPosts, formatDate } from "@/lib/posts";
 
 export const metadata = {
-  title: "Blog — Pillar Finance",
+  title: "Blog — Pyris Pact",
   description:
-    "Writing from Pillar on self-repaying credit, collateral, and lending against assets whose markets close.",
+    "Writing from Pyris Pact on programmable milestone escrow, B2B settlements, and native USDC gas on Arc Chain.",
 };
 
 export default function Page() {
@@ -19,11 +19,11 @@ export default function Page() {
       <Banner />
       <div className="rusd-shell p2p-app-shell">
         <Header />
-        <main className="rusd-frame rusd-main pillar-doc">
+        <main className="rusd-frame rusd-main pyris-doc">
           <header className="blog-index-heading">
-            <p className="pillar-doc-eyebrow">Writing</p>
+            <p className="pyris-doc-eyebrow">Writing</p>
             <h1>Blog</h1>
-            <p className="pillar-doc-lede">
+            <p className="pyris-doc-lede">
               Notes on self-repaying credit and the constraints that shape it.
             </p>
           </header>
@@ -47,3 +47,4 @@ export default function Page() {
     </>
   );
 }
+

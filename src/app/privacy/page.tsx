@@ -1,9 +1,9 @@
 import { ProsePage, Section } from "@/components/ProsePage";
 
 export const metadata = {
-  title: "Privacy — Pillar Finance",
+  title: "Privacy — Pyris Pact",
   description:
-    "Pillar has no account and no signup. What the site sees, what the chain records, and what we never collect.",
+    "Pyris Pact has no account and no signup. What the site sees, what the chain records, and what we never collect.",
 };
 
 const TOC = [
@@ -18,13 +18,13 @@ export default function Page() {
     <ProsePage
       eyebrow="Legal"
       title="Privacy"
-      lede="Short, because there is not much to say. Most of what a service like this would normally collect, Pillar never receives."
-      meta={["Updated 10 September 2026"]}
+      lede="Short, because there is not much to say. Most of what a service like this would normally collect, Pyris never receives."
+      meta={["Updated 16 September 2026"]}
       toc={TOC}
     >
       <Section id="what-we-never-ask" heading="What we never ask for">
         <p>
-          There is no account and no signup. Pillar does not ask for your name, your email, or identity
+          There is no account and no signup. Pyris does not ask for your name, your email, or identity
           documents, and there is no password to lose. We do not sell data, and we run no advertising and no
           cross-site tracking.
         </p>
@@ -39,7 +39,7 @@ export default function Page() {
 
       <Section id="what-the-chain-records" heading="What the chain records">
         <p>
-          Deposits, borrows, repayments, harvests and liquidations are recorded on a public blockchain. They
+          Escrow deposits, deliverable submissions, releases, and refunds are recorded on Arc Chain. They
           are readable by anyone, they are permanent, and they cannot be deleted — by us or by you. That is a
           property of the chain, not a policy choice, and it is worth understanding before your first
           transaction.
@@ -52,9 +52,10 @@ export default function Page() {
           operated by someone else and carries its own policy, which governs what it sees.
         </p>
         <p>
-          Questions: <a href="mailto:support@pillar.finance">support@pillar.finance</a>
+          Questions: <a href="mailto:support@pyris.tech">support@pyris.tech</a>
         </p>
       </Section>
     </ProsePage>
   );
 }
+

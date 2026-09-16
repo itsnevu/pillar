@@ -5,14 +5,14 @@ import {Script, console} from "forge-std/Script.sol";
 import {MockERC20} from "../test/mocks/MockERC20.sol";
 import {MockOracle} from "../test/mocks/MockOracle.sol";
 import {MockYieldSource} from "../test/mocks/MockYieldSource.sol";
-import {PillarCore} from "../src/PillarCore.sol";
+import {PyrisCore} from "../src/PyrisCore.sol";
 import {IYieldSource} from "../src/IYieldSource.sol";
 import {IPriceOracle} from "../src/IPriceOracle.sol";
 
-/// @notice Local deployment: mocks + oracle + yield source + PillarCore with 6 markets.
+/// @notice Local deployment: mocks + oracle + yield source + PyrisCore with 6 markets.
 ///         Writes deployments/<chainId>.json (local.json for Anvil 31337).
-/// @dev For Robinhood Chain later: swap the Mock* deployments for the real USDG address,
-///      a real oracle adapter and the Mosaic vault adapter — PillarCore is unchanged.
+/// @dev For Arc Chain later: swap the Mock* deployments for the real USDG address,
+///      a real oracle adapter and the Mosaic vault adapter — PyrisCore is unchanged.
 contract DeployLocal is Script {
     struct MarketCfg {
         string symbol;
@@ -46,7 +46,7 @@ contract DeployLocal is Script {
         MockERC20 usdg = new MockERC20("Global Dollar", "USDG", 6);
         MockOracle oracle = new MockOracle(deployer);
         MockYieldSource ys = new MockYieldSource(deployer, usdg, IPriceOracle(address(oracle)), RATE_8PCT);
-        PillarCore core = new PillarCore(deployer, usdg, IPriceOracle(address(oracle)), feeRecipient);
+        PyrisCore core = new PyrisCore(deployer, usdg, IPriceOracle(address(oracle)), feeRecipient);
 
         address[6] memory assets;
         for (uint256 i; i < cfgs.length; ++i) {
@@ -73,7 +73,7 @@ contract DeployLocal is Script {
         vm.serializeAddress(root, "usdg", address(usdg));
         vm.serializeAddress(root, "oracle", address(oracle));
         vm.serializeAddress(root, "yieldSource", address(ys));
-        vm.serializeAddress(root, "pillarCore", address(core));
+        vm.serializeAddress(root, "PyrisCore", address(core));
 
         string memory mk = "markets";
         string memory marketsJson;
@@ -90,8 +90,9 @@ contract DeployLocal is Script {
 
         string memory file = block.chainid == 31337 ? "deployments/local.json" : string.concat("deployments/", vm.toString(block.chainid), ".json");
         vm.writeJson(out, file);
-        console.log("PillarCore:", address(core));
+        console.log("PyrisCore:", address(core));
         console.log("USDG:", address(usdg));
         console.log("wrote", file);
     }
 }
+

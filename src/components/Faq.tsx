@@ -1,75 +1,61 @@
 import Link from "next/link";
 
-/** Answers are deliberately the unflattering ones; every claim here is enforced in the contract. */
-const FAQ: { q: string; a: React.ReactNode }[] = [
+const FAQ: { q: string; a: any }[] = [
   {
-    q: "What happens if the yield goes to zero?",
+    q: "Why use Arc Chain for programmable B2B payments?",
     a: (
       <p>
-        Your debt stops shrinking. It does not grow — Pillar charges no interest and nothing accrues
-        against you — but it does not disappear either. A self-repaying loan repays itself at the speed
-        your collateral earns, and no faster.
+        Arc Chain is Circle&apos;s Layer-1 EVM network where the native gas fee is paid directly in
+        <strong> USDC</strong>. Businesses and freelancers never need to purchase or manage volatile tokens
+        just to fund an escrow or submit an invoice.
       </p>
     ),
   },
   {
-    q: "Can I still be liquidated?",
-    a: (
-      <>
-        <p>
-          Yes. Positions are overcollateralised and a position below a health factor of 1.0 can be
-          liquidated. What the contract constrains is how much: it computes the smallest repayment that
-          restores your position to health and reverts anything larger.
-        </p>
-        <p>
-          You lose a slice rather than the position. That is a constraint in the code, not a policy we
-          promise to follow.
-        </p>
-      </>
-    ),
-  },
-  {
-    q: "Why is the maximum LTV only 30–50%?",
-    a: (
-      <>
-        <p>
-          Because equity markets close and your loan does not. A tokenized stock follows a market that
-          shuts on Friday and reopens on Monday, and it can open well below Friday&apos;s close with no
-          window in which anyone could have traded out of the way.
-        </p>
-        <p>
-          No faster oracle fixes that. The only honest response is to lend less against it, which is why
-          a broad ETF is allowed more than a single company.
-        </p>
-      </>
-    ),
-  },
-  {
-    q: "What does Pillar charge?",
+    q: "How does a client get a refund if a contractor fails to deliver?",
     a: (
       <p>
-        No interest, no origination fee, and no early-repayment fee. The protocol takes 10% of the yield
-        your collateral produces, which means it earns only while your collateral is working.
+        Every pact specifies an onchain milestone deadline. If the deadline passes without the contractor
+        submitting work, the client can trigger the <code>refund()</code> function to immediately reclaim
+        100% of the locked USDC.
       </p>
     ),
   },
   {
-    q: "What happens if a price feed breaks?",
+    q: "Can a contractor voluntarily cancel or decline a project?",
     a: (
       <p>
-        New borrowing and collateral withdrawal are blocked, because those are the actions that could
-        exploit a wrong number. Repayment, deposits and the harvest are never blocked — you must never be
-        locked out of making your own position safer.
+        Yes. At any time before release, a contractor can initiate a refund to return the escrowed
+        funds back to the client immediately.
       </p>
     ),
   },
   {
-    q: "Can I repay early or take my collateral back?",
+    q: "What are the platform fees compared to traditional escrow services?",
     a: (
       <p>
-        Any time, at no cost. There is no interest schedule for early repayment to interrupt. Withdrawing
-        collateral only requires the remaining debt to stay within the loan-to-value limit, and pulling
-        principal out never forfeits yield you have already earned.
+        Traditional platforms like Upwork or Escrow.com charge 10% to 20% in platform cuts and currency
+        conversion fees. Pyris Pact operates onchain with <strong>0% platform fee</strong> during open beta.
+        You only pay the sub-cent Arc Chain gas fee (in USDC).
+      </p>
+    ),
+  },
+  {
+    q: "What types of deliverables can be submitted?",
+    a: (
+      <p>
+        The deliverable proof note can include GitHub pull request URLs, Figma links, IPFS content
+        hashes, or encrypted document links. All timestamps and submissions are permanently recorded on
+        Arc Chain.
+      </p>
+    ),
+  },
+  {
+    q: "How does dispute handling work?",
+    a: (
+      <p>
+        If the submitted work does not match agreed specifications, either party can mark the pact
+        as <strong>Disputed</strong>, halting automatic state progression while parties resolve terms.
       </p>
     ),
   },
@@ -79,11 +65,12 @@ export function Faq() {
   return (
     <section className="rusd-faq" id="faq" aria-labelledby="faq-heading">
       <div className="rusd-faq-heading">
-        <h2 id="faq-heading">Before you borrow</h2>
+        <h2 id="faq-heading">Frequently asked questions</h2>
         <p>
-          The questions worth asking, answered with the limits included. The longer version is in the{" "}
-          <Link className="rusd-text-link" href="/risk">
-            risk disclosure
+          Learn how programmable milestone escrows protect both businesses and contractors on Arc Chain.
+          Read the{" "}
+          <Link className="rusd-text-link" href="/docs">
+            technical documentation
           </Link>
           .
         </p>
