@@ -47,7 +47,7 @@ export const DEPLOYMENT = deployment as unknown as Deployment;
 export const hasDeployment = DEPLOYMENT !== null;
 
 export const addresses = {
-  pyrisPact: DEPLOYMENT?.pyrisPact ?? ("0x6Ff91FCe342a7B62A1A0d450dA73f7f25d6DB801" as Address),
+  pyrisPact: DEPLOYMENT?.pyrisPact ?? ("0xb5f905f48321F44e379d8680e947dDd05830AF62" as Address),
   usdc: DEPLOYMENT?.usdc ?? ("0x0000000000000000000000000000000000000000" as Address),
 } as const;
 

@@ -15,7 +15,7 @@
 - `PyrisPact.t.sol`:
   - Test suite Foundry lengkap menguji seluruh transisi state, pembatasan hak akses vendor vs klien, serta logika refund otomatis setelah deadline lewat.
 - `DeployPact.s.sol`:
-  - Script deployment untuk Arc Mainnet (`5042`) dan Anvil lokal (`31337`). **Sudah terdeploy di Arc Mainnet: `0x6Ff91FCe342a7B62A1A0d450dA73f7f25d6DB801`** (`contracts/deployments/5042.json`).
+  - Script deployment untuk Arc Mainnet (`5042`) dan Anvil lokal (`31337`). **Sudah terdeploy di Arc Mainnet: `0xb5f905f48321F44e379d8680e947dDd05830AF62`** (`contracts/deployments/5042.json`).
 
 ### 3. Frontend App & UI
 - **Dashboard (`/app`)**:
