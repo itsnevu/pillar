@@ -4,9 +4,7 @@ declare namespace JSX {
   interface IntrinsicElements {
     [elemName: string]: any;
   }
-  interface Element {
-    [key: string]: any;
-  }
+  type Element = any;
 }
 
 declare namespace React {
@@ -14,9 +12,7 @@ declare namespace React {
     interface IntrinsicElements {
       [elemName: string]: any;
     }
-    interface Element {
-      [key: string]: any;
-    }
+    type Element = any;
   }
   type ReactNode = any;
   type ReactElement<P = any, T extends string | JSXElementConstructor<any> = string | JSXElementConstructor<any>> = any;
@@ -78,6 +74,12 @@ declare module "react/jsx-dev-runtime" {
 
 declare module "next" {
   export type Metadata = any;
+  export type NextConfig = any;
+  export type MetadataRoute = any;
+  export namespace MetadataRoute {
+    export type Robots = any;
+    export type Sitemap = any;
+  }
 }
 
 declare module "next/link" {

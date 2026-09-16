@@ -65,7 +65,7 @@ export function ActionPanel({ onDone }: { onDone?: () => void }) {
             required
             placeholder="0x..."
             value={vendor}
-            onChange={(e) => setVendor(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setVendor(e.target.value)}
             className="w-full h-10 px-3 rounded-[6px] border border-line bg-bg font-mono text-ink text-[12px]"
           />
         </div>
@@ -79,7 +79,7 @@ export function ActionPanel({ onDone }: { onDone?: () => void }) {
             required
             placeholder="e.g. Audit Delivery"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
             className="w-full h-10 px-3 rounded-[6px] border border-line bg-bg text-ink text-[13px]"
           />
         </div>
@@ -95,7 +95,7 @@ export function ActionPanel({ onDone }: { onDone?: () => void }) {
               required
               placeholder="1000"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAmount(e.target.value)}
               className="w-full h-10 px-3 rounded-[6px] border border-line bg-bg font-mono text-ink text-[13px]"
             />
           </div>
@@ -105,7 +105,7 @@ export function ActionPanel({ onDone }: { onDone?: () => void }) {
             </label>
             <select
               value={days}
-              onChange={(e) => setDays(Number(e.target.value))}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setDays(Number(e.target.value))}
               className="w-full h-10 px-2 rounded-[6px] border border-line bg-bg text-ink text-[12px]"
             >
               <option value={3}>3 Days</option>
@@ -124,7 +124,7 @@ export function ActionPanel({ onDone }: { onDone?: () => void }) {
             rows={2}
             placeholder="Milestone criteria or PR link"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
             className="w-full p-2.5 rounded-[6px] border border-line bg-bg text-ink text-[12px]"
           />
         </div>

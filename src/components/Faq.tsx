@@ -89,3 +89,5 @@ export function Faq() {
     </section>
   );
 }
+
+export default Faq;
