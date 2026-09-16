@@ -146,7 +146,13 @@ function createPact(
             <strong>Pembatalan Sukarela Kontraktor:</strong> Jika terjadi perubahan kesepakatan, kontraktor dapat secara sukarela memicu refund kapan saja untuk mengembalikan dana ke klien.
           </li>
           <li>
-            <strong>Flag Sengketa (Dispute):</strong> Jika deliverable tidak sesuai spesifikasi, salah satu pihak dapat mengaktifkan status <code>DISPUTED (4)</code> untuk menghentikan timeout otomatis selagi negosiasi berlangsung.
+            <strong>Flag Sengketa (Dispute):</strong> Jika deliverable tidak sesuai spesifikasi, salah satu pihak dapat mengaktifkan status <code>DISPUTED (4)</code>. Escrow dibekukan dan hanya bisa diselesaikan lewat <em>split</em> yang disetujui kedua pihak (<code>proposeResolution</code>), atau lewat putusan <em>arbiter</em> jika alamat arbiter ditunjuk saat pact dibuat.
+          </li>
+          <li>
+            <strong>Submit terlambat ditolak:</strong> kontraktor tidak bisa memanggil <code>submitWork</code> setelah deadline, jadi hak refund klien tidak bisa didahului. Klien bisa memberi waktu tambahan lewat <code>extendDeadline</code>.
+          </li>
+          <li>
+            <strong>Payout tidak bisa diblokir:</strong> jika dompet penerima menolak transfer, dana masuk ke <code>pendingWithdrawals</code> dan bisa ditarik kapan saja lewat <code>withdraw()</code>.
           </li>
         </ul>
       </Section>

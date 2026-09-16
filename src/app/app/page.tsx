@@ -2,10 +2,27 @@
 
 import { useState } from "react";
 import { useAccount } from "wagmi";
-import { isAddress, parseUnits, type Address } from "viem";
+import { isAddress, parseUnits, zeroAddress, type Address } from "viem";
 import { AppShell, Stat } from "@/components/app/AppShell";
 import { usePacts, usePactMutations, useMounted } from "@/lib/hooks";
-import { fmtUsdc, truncateAddress, fmtDate, pactStatusMeta, PactStatus, type Pact, USDC_DECIMALS } from "@/lib/contracts";
+import {
+  fmtUsdc,
+  truncateAddress,
+  fmtDate,
+  pactStatusMeta,
+  PactStatus,
+  isActive,
+  type Pact,
+  USDC_DECIMALS,
+} from "@/lib/contracts";
+
+/** Wallet rejections and reverts both land here; the UI never claims success on failure. */
+function errorText(e: unknown, fallback: string): string {
+  const msg = e instanceof Error ? e.message : String(e);
+  if (/user rejected|denied/i.test(msg)) return "Transaction cancelled in wallet.";
+  const m = msg.match(/reverted with the following reason:\s*([^\n]+)|Error: (\w+)\(/);
+  return m ? `${fallback}: ${m[1] ?? m[2]}` : fallback;
+}
 
 export default function DashboardPage() {
   return (
@@ -23,9 +40,20 @@ function PactDashboard() {
   const [submittingPactId, setSubmittingPactId] = useState<bigint | null>(null);
   const [submissionNote, setSubmissionNote] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [isError, setIsError] = useState(false);
+  const ok = (msg: string) => {
+    setIsError(false);
+    setFeedback(msg);
+  };
+  const fail = (e: unknown, msg: string) => {
+    console.error(e);
+    setIsError(true);
+    setFeedback(errorText(e, msg));
+  };
 
   // Form states for creating a new pact
   const [vendorAddress, setVendorAddress] = useState("");
+  const [arbiterAddress, setArbiterAddress] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [amountUsdc, setAmountUsdc] = useState("");
@@ -48,23 +76,37 @@ function PactDashboard() {
       alert("Please enter a valid USDC amount.");
       return;
     }
+    const arbiter = arbiterAddress.trim();
+    if (arbiter && !isAddress(arbiter)) {
+      alert("Arbiter must be a valid address, or left empty.");
+      return;
+    }
+    if (arbiter && (arbiter.toLowerCase() === vendorAddress.toLowerCase() || arbiter.toLowerCase() === connected?.toLowerCase())) {
+      alert("The arbiter must be a third party, not the client or the contractor.");
+      return;
+    }
 
     try {
       const amountBigInt = parseUnits(amountUsdc, USDC_DECIMALS);
       const deadlineSeconds = deadlineDays * 86400;
-      await createPact(vendorAddress as Address, amountBigInt, deadlineSeconds, title, description);
-      setFeedback(`Success! Pact "${title}" created and ${amountUsdc} USDC locked into escrow.`);
+      await createPact(
+        vendorAddress as Address,
+        amountBigInt,
+        deadlineSeconds,
+        title,
+        description,
+        (arbiter || zeroAddress) as Address
+      );
+      ok(`Pact "${title}" created and ${amountUsdc} USDC locked into escrow.`);
       setIsCreateOpen(false);
-      // Reset form
       setVendorAddress("");
+      setArbiterAddress("");
       setTitle("");
       setDescription("");
       setAmountUsdc("");
       refetch();
-    } catch (err: any) {
-      console.error(err);
-      setFeedback(`Transaction simulated or completed: Escrow for ${amountUsdc} USDC recorded.`);
-      setIsCreateOpen(false);
+    } catch (err) {
+      fail(err, "Pact not created");
     }
   };
 
@@ -72,11 +114,10 @@ function PactDashboard() {
     if (!confirm(`Are you sure you want to approve and release payment for "${title}"?`)) return;
     try {
       await releaseFunds(pactId);
-      setFeedback(`Payment released successfully! Funds sent to contractor.`);
+      ok("Payment released. Funds sent to contractor.");
       refetch();
-    } catch (err: any) {
-      console.error(err);
-      setFeedback(`Payment released for Pact #${pactId.toString()}!`);
+    } catch (err) {
+      fail(err, "Release failed");
     }
   };
 
@@ -87,15 +128,12 @@ function PactDashboard() {
     }
     try {
       await submitWork(pactId, submissionNote);
-      setFeedback(`Work submitted for review!`);
+      ok("Work submitted for review.");
       setSubmittingPactId(null);
       setSubmissionNote("");
       refetch();
-    } catch (err: any) {
-      console.error(err);
-      setFeedback(`Deliverable submitted for Pact #${pactId.toString()}!`);
-      setSubmittingPactId(null);
-      setSubmissionNote("");
+    } catch (err) {
+      fail(err, "Submission failed");
     }
   };
 
@@ -103,11 +141,10 @@ function PactDashboard() {
     if (!confirm("Are you sure you want to claim a refund for this pact?")) return;
     try {
       await refund(pactId);
-      setFeedback(`Refund processed! Funds returned to client.`);
+      ok("Refund processed. Funds returned to client.");
       refetch();
-    } catch (err: any) {
-      console.error(err);
-      setFeedback(`Refund processed for Pact #${pactId.toString()}!`);
+    } catch (err) {
+      fail(err, "Refund failed");
     }
   };
 
@@ -141,9 +178,14 @@ function PactDashboard() {
 
       {/* Feedback Banner */}
       {feedback && (
-        <div className="mt-6 p-4 rounded-[8px] bg-emerald-50 border border-emerald-200 text-emerald-800 text-[13.5px] flex justify-between items-center">
+        <div
+          role="status"
+          className={`mt-6 p-4 rounded-[8px] border text-[13.5px] flex justify-between items-center ${
+            isError ? "bg-red-50 border-red-200 text-red-800" : "bg-emerald-50 border-emerald-200 text-emerald-800"
+          }`}
+        >
           <span>{feedback}</span>
-          <button onClick={() => setFeedback(null)} className="text-emerald-700 font-bold hover:underline">
+          <button onClick={() => setFeedback(null)} className="font-bold hover:underline">
             ✕
           </button>
         </div>
@@ -230,13 +272,15 @@ function PactDashboard() {
                         <h3 className="font-semibold text-[17px] text-ink">{p.title}</h3>
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-pill text-[11.5px] font-semibold ${
-                            p.status === PactStatus.RELEASED
+                            p.status === PactStatus.RELEASED || p.status === PactStatus.RESOLVED
                               ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                               : p.status === PactStatus.SUBMITTED
                                 ? "bg-blue-50 text-blue-700 border border-blue-200"
                                 : p.status === PactStatus.REFUNDED
                                   ? "bg-stone-100 text-stone-600 border border-stone-200"
-                                  : "bg-amber-50 text-amber-800 border border-amber-200"
+                                  : p.status === PactStatus.DISPUTED
+                                    ? "bg-red-50 text-red-700 border border-red-200"
+                                    : "bg-amber-50 text-amber-800 border border-amber-200"
                           }`}
                         >
                           {meta.label}
@@ -286,7 +330,7 @@ function PactDashboard() {
                       {/* Action Buttons */}
                       <div className="flex gap-2">
                         {/* Client Release Button */}
-                        {p.status !== PactStatus.RELEASED && p.status !== PactStatus.REFUNDED && (
+                        {isActive(p.status) && connected?.toLowerCase() === p.client.toLowerCase() && (
                           <button
                             onClick={() => handleRelease(p.id, p.title)}
                             disabled={isPending}
@@ -297,7 +341,7 @@ function PactDashboard() {
                         )}
 
                         {/* Contractor Submit Button */}
-                        {p.status === PactStatus.FUNDED && (
+                        {p.status === PactStatus.FUNDED && connected?.toLowerCase() === p.vendor.toLowerCase() && (
                           <button
                             onClick={() => setSubmittingPactId(p.id)}
                             disabled={isPending}
@@ -308,7 +352,9 @@ function PactDashboard() {
                         )}
 
                         {/* Refund Button */}
-                        {p.status !== PactStatus.RELEASED && p.status !== PactStatus.REFUNDED && (
+                        {isActive(p.status) &&
+                          (connected?.toLowerCase() === p.client.toLowerCase() ||
+                            connected?.toLowerCase() === p.vendor.toLowerCase()) && (
                           <button
                             onClick={() => handleRefund(p.id)}
                             disabled={isPending}
@@ -316,6 +362,15 @@ function PactDashboard() {
                           >
                             Refund
                           </button>
+                        )}
+
+                        {p.status === PactStatus.DISPUTED && (
+                          <a
+                            href={`/app/${p.id.toString()}`}
+                            className="px-3.5 py-1.5 rounded-pill border border-red-200 text-red-700 text-[12px] font-medium hover:bg-red-50 transition-colors"
+                          >
+                            Settle Dispute
+                          </a>
                         )}
                       </div>
                     </div>
@@ -354,6 +409,22 @@ function PactDashboard() {
                   onChange={(e: any) => setVendorAddress(e.target.value)}
                   className="w-full h-11 px-3 rounded-[8px] border border-line bg-bg font-mono text-[13px] text-ink focus:outline-none focus:border-ink"
                 />
+              </div>
+
+              <div>
+                <label className="block text-[12px] font-semibold uppercase tracking-wider text-muted mb-1">
+                  Arbiter Address <span className="normal-case tracking-normal font-normal">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="0x… a third party who can rule on a dispute"
+                  value={arbiterAddress}
+                  onChange={(e: any) => setArbiterAddress(e.target.value)}
+                  className="w-full h-11 px-3 rounded-[8px] border border-line bg-bg font-mono text-[13px] text-ink focus:outline-none focus:border-ink"
+                />
+                <p className="text-[12px] text-muted mt-1">
+                  Without an arbiter, a dispute can only be settled by a split both parties agree on.
+                </p>
               </div>
 
               <div>

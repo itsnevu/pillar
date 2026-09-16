@@ -38,8 +38,8 @@ export function ActionPanel({ onDone }: { onDone?: () => void }) {
       setDescription("");
       if (onDone) onDone();
     } catch (err) {
-      setStatus("Pact simulated / recorded.");
-      if (onDone) onDone();
+      console.error(err);
+      setStatus(/user rejected|denied/i.test(String(err)) ? "Transaction cancelled in wallet." : "Pact not created: transaction failed.");
     }
   };
 

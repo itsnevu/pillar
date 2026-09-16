@@ -9,8 +9,8 @@
 ### 2. Smart Contract & Test Suite (`contracts/`)
 - `PyrisPact.sol`:
   - Kontrak escrow terdesentralisasi khusus Arc Chain dengan akuntansi native USDC (msg.value, 18 desimal di EVM).
-  - State machine: `FUNDED (0)`, `SUBMITTED (1)`, `RELEASED (2)`, `REFUNDED (3)`, `DISPUTED (4)`.
-  - Fungsi: `createPact`, `submitWork`, `releaseFunds`, `refund`, `dispute`, serta view helpers pagination.
+  - State machine: `FUNDED (0)`, `SUBMITTED (1)`, `RELEASED (2)`, `REFUNDED (3)`, `DISPUTED (4)`, `RESOLVED (5)`.
+  - Fungsi: `createPact`, `submitWork`, `releaseFunds`, `refund`, `dispute`, `extendDeadline`, `proposeResolution`, `arbitrate`, `withdraw`, serta view helpers pagination.
   - Zero dependencies: tidak memerlukan oracle eksternal maupun swap DEX, sehingga sangat aman dan efisien gas.
 - `PyrisPact.t.sol`:
   - Test suite Foundry lengkap menguji seluruh transisi state, pembatasan hak akses vendor vs klien, serta logika refund otomatis setelah deadline lewat.

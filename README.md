@@ -30,11 +30,15 @@ Canonical Domain: **[pyris.tech](https://pyris.tech)**
 ## Smart Contract: `PyrisPact.sol`
 | Function | Access | Description |
 | --- | --- | --- |
-| `createPact(...)` | Client | Locks USDC into escrow with specified contractor, amount, deadline, and deliverable scope. |
+| `createPact(...)` | Client | Locks USDC into escrow with contractor, optional arbiter, amount, deadline, and scope. |
 | `submitWork(...)` | Contractor | Records proof of completion (GitHub PR, Figma link, IPFS CID) onchain. |
 | `releaseFunds(...)` | Client | Approves deliverable and disburses 100% of escrowed USDC to contractor. |
 | `refund(...)` | Client / Contractor | Reclaims funds if deadline passed without submission, or allows contractor voluntary cancellation. |
-| `dispute(...)` | Either party | Flags a milestone as disputed if deliverables diverge from initial terms. |
+| `dispute(...)` | Either party | Freezes the pact if deliverables diverge from the agreed scope. |
+| `proposeResolution(...)` | Either party | Proposes a split (vendor share in bps); settles when the counterparty matches it. |
+| `arbitrate(...)` | Arbiter | Rules on a disputed pact, if an arbiter was named at creation. |
+| `extendDeadline(...)` | Client | Grants the contractor more time while the pact is FUNDED. |
+| `withdraw()` | Anyone owed | Claims a payout that could not be pushed to the recipient. |
 
 ---
 

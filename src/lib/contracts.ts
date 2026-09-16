@@ -10,12 +10,20 @@ export enum PactStatus {
   RELEASED = 2,
   REFUNDED = 3,
   DISPUTED = 4,
+  RESOLVED = 5,
 }
+
+/** Terminal states: no further transition is possible. */
+export const isTerminal = (s: PactStatus) =>
+  s === PactStatus.RELEASED || s === PactStatus.REFUNDED || s === PactStatus.RESOLVED;
+/** States from which release / cancel / dispute are still possible. */
+export const isActive = (s: PactStatus) => s === PactStatus.FUNDED || s === PactStatus.SUBMITTED;
 
 export type Pact = {
   id: bigint;
   client: Address;
   vendor: Address;
+  arbiter: Address;
   amount: bigint;
   deadline: bigint;
   status: PactStatus;
@@ -24,6 +32,8 @@ export type Pact = {
   submissionNote: string;
   createdAt: bigint;
   submittedAt: bigint;
+  disputedAt: bigint;
+  vendorShareBps: number;
 };
 
 type Deployment = {
@@ -109,7 +119,13 @@ export function pactStatusMeta(status: PactStatus): { label: string; badgeClass:
       return {
         label: "Disputed",
         badgeClass: "badge-disputed",
-        desc: "Flagged for arbitration or mediation.",
+        desc: "Frozen until both parties agree on a split, or the arbiter rules.",
+      };
+    case PactStatus.RESOLVED:
+      return {
+        label: "Resolved",
+        badgeClass: "badge-resolved",
+        desc: "Dispute settled. Funds split per the agreed share.",
       };
     default:
       return { label: "Unknown", badgeClass: "", desc: "" };

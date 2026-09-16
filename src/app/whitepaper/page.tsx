@@ -95,13 +95,15 @@ export default function Page() {
     SUBMITTED,   // 1: Contractor submit deliverable link / proof
     RELEASED,    // 2: Client menyetujui; USDC cair ke contractor
     REFUNDED,    // 3: Dana kembali ke client (timeout / cancel)
-    DISPUTED     // 4: Dalam tinjauan perselisihan
+    DISPUTED,    // 4: Dibekukan; menunggu kesepakatan split atau putusan arbiter
+    RESOLVED     // 5: Sengketa selesai; dana dibagi sesuai vendorShareBps
 }
 
 struct Pact {
     uint256 id;
     address client;
     address vendor;
+    address arbiter;        // opsional; address(0) = hanya resolusi mutual
     uint256 amount;
     uint256 deadline;
     PactStatus status;
@@ -110,11 +112,14 @@ struct Pact {
     string submissionNote;
     uint256 createdAt;
     uint256 submittedAt;
+    uint256 disputedAt;
+    uint16  vendorShareBps; // diisi saat RESOLVED
 }`}
         </pre>
         <Note>
-          Invarian Kontrak: Dana yang terkunci di dalam escrow tidak dapat dialihkan ke alamat mana pun
-          kecuali ke alamat <code>vendor</code> (saat release) atau kembali ke alamat <code>client</code> (saat refund).
+          Invarian Kontrak: Dana yang terkunci di dalam escrow hanya dapat mengalir ke <code>vendor</code>,
+          ke <code>client</code>, atau terbagi di antara keduanya sesuai <code>vendorShareBps</code> yang disepakati.
+          Tidak ada pihak ketiga, termasuk deployer, yang dapat memindahkan dana.
         </Note>
       </Section>
 
@@ -183,6 +188,30 @@ struct Pact {
         <p>
           Apabila tenggat waktu terlewati dan kontraktor belum menyerahkan deliverable, klien berhak memicu
           <code>refund(pactId)</code> untuk menarik kembali 100% modal tanpa memerlukan persetujuan kontraktor.
+          <code>submitWork</code> ditolak setelah deadline, sehingga kontraktor tidak dapat mendahului refund klien
+          dengan submit terlambat. Klien dapat memperpanjang tenggat lewat <code>extendDeadline</code>.
+        </p>
+      </Section>
+
+      <Section id="dispute-resolution" heading="Dispute Resolution">
+        <p>
+          Status <code>DISPUTED</code> membekukan escrow, tetapi bukan jalan buntu. Ada dua jalur keluar:
+        </p>
+        <ul>
+          <li>
+            <strong>Kesepakatan mutual:</strong> salah satu pihak memanggil <code>proposeResolution(pactId, vendorShareBps)</code>
+            dengan porsi kontraktor dalam basis poin (0–10000). Saat pihak lawan mengajukan angka yang sama,
+            kontrak langsung membagi dana dan status menjadi <code>RESOLVED</code>. Angka berbeda menggantikan proposal sebelumnya.
+          </li>
+          <li>
+            <strong>Arbiter opsional:</strong> saat membuat pact, klien dapat menunjuk alamat <code>arbiter</code> pihak ketiga.
+            Hanya alamat itu yang dapat memanggil <code>arbitrate(pactId, vendorShareBps)</code> untuk memutus sengketa.
+          </li>
+        </ul>
+        <p>
+          Pembayaran menggunakan pola push-with-pull-fallback: jika alamat penerima menolak transfer, jumlahnya
+          dicatat di <code>pendingWithdrawals</code> dan dapat ditarik lewat <code>withdraw()</code>, sehingga tidak ada
+          pihak yang bisa memblokir penyelesaian.
         </p>
       </Section>
 
