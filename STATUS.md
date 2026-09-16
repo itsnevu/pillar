@@ -15,7 +15,7 @@
 - `PyrisPact.t.sol`:
   - Test suite Foundry lengkap menguji seluruh transisi state, pembatasan hak akses vendor vs klien, serta logika refund otomatis setelah deadline lewat.
 - `DeployPact.s.sol`:
-  - Script deployment untuk Arc Chain Testnet (`5042002`) dan Anvil lokal (`31337`).
+  - Script deployment untuk Arc Mainnet (`5042`) dan Anvil lokal (`31337`). **Sudah terdeploy di Arc Mainnet: `0x6Ff91FCe342a7B62A1A0d450dA73f7f25d6DB801`** (`contracts/deployments/5042.json`).
 
 ### 3. Frontend App & UI
 - **Dashboard (`/app`)**:
@@ -52,18 +52,17 @@
    File `.env` sudah disiapkan dengan:
    ```env
    NEXT_PUBLIC_SITE_URL=https://pyris.tech
-   NEXT_PUBLIC_CHAIN_ID=5042002
-   NEXT_PUBLIC_RPC_URL=https://rpc.testnet.arc.io
-   NEXT_PUBLIC_CHAIN_NAME=Arc Chain
-   NEXT_PUBLIC_EXPLORER_URL=https://testnet.arcscan.io
+   NEXT_PUBLIC_CHAIN_ID=5042
+   NEXT_PUBLIC_RPC_URL=https://rpc.mainnet.arc.io
+   NEXT_PUBLIC_CHAIN_NAME=Arc Mainnet
+   NEXT_PUBLIC_EXPLORER_URL=https://explorer.arc.io
    ```
-4. **Deploy Smart Contract ke Arc Chain Testnet**:
-   Jalankan script deploy dengan private key deployer yang didanai testnet USDC:
+4. **Smart Contract (sudah terdeploy di Arc Mainnet)**:
+   Tidak perlu deploy ulang. Sinkronkan ABI + alamat mainnet ke frontend sebelum build:
    ```bash
-   PRIVATE_KEY=0x... forge script script/DeployPact.s.sol:DeployPact --rpc-url https://rpc.testnet.arc.io --broadcast
+   DEPLOYMENT_FILE=contracts/deployments/5042.json npm run abi:sync
    ```
-5. **Jalankan Service di VPS**:
-   Gunakan PM2 atau systemd:
+   Hanya jika perlu redeploy (mis. upgrade kontrak):
    ```bash
-   pm2 start npm --name "pyris-tech" -- start
+   PRIVATE_KEY=0x... forge script script/DeployPact.s.sol:DeployPact --rpc-url https://rpc.mainnet.arc.io --broadcast
    ```

@@ -6,7 +6,7 @@ import { useState } from "react";
 import { LINKS } from "@/lib/links";
 
 const NAV = [
-  { href: "/#markets", label: "Borrow", active: true },
+  { href: "/#markets", label: "Pacts", active: true },
   { href: LINKS.docs, label: "Docs", active: false },
   { href: LINKS.app, label: "Portfolio", active: false },
 ];

@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "chain": "anvil --port ${ANVIL_PORT:-8545} --chain-id 31337",
-    "deploy:local": "cd contracts && forge script script/DeployLocal.s.sol:DeployLocal --rpc-url ${RPC_URL:-http://127.0.0.1:8545} --broadcast && cd .. && npm run abi:sync",
+    "deploy:local": "cd contracts && forge script script/DeployPact.s.sol:DeployPact --rpc-url ${RPC_URL:-http://127.0.0.1:8545} --broadcast && cd .. && npm run abi:sync",
     "abi:sync": "node scripts/sync-abi.mjs",
     "contracts:build": "cd contracts && forge build",
     "contracts:test": "cd contracts && forge test -vvv"

@@ -239,7 +239,7 @@ export function MarketView({ symbol }: { symbol: string }) {
           <div className="rounded-[12px] border border-line bg-surface p-5 text-[12.5px]">
             <div className="font-semibold text-ink mb-2">Smart Contract Verification</div>
             <div className="text-muted space-y-1">
-              <div>Network: <strong>Arc Chain Testnet (ID: 5042002)</strong></div>
+              <div>Network: <strong>Arc Mainnet (ID: 5042)</strong></div>
               <div>Gas Currency: <strong>Native USDC</strong></div>
               <div>PyrisPact Contract: <code className="font-mono text-ink">{truncateAddress(addresses.pyrisPact)}</code></div>
             </div>
