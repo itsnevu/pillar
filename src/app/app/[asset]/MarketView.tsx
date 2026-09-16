@@ -23,6 +23,7 @@ import {
 function errorText(e: unknown, fallback: string): string {
   const msg = e instanceof Error ? e.message : String(e);
   if (/user rejected|denied/i.test(msg)) return "Transaction cancelled in wallet.";
+  if (/not confirmed on Arc|Transaction reverted/.test(msg)) return msg;
   const m = msg.match(/reverted with the following reason:\s*([^\n]+)|Error: (\w+)\(/);
   return m ? `${fallback}: ${m[1] ?? m[2]}` : fallback;
 }

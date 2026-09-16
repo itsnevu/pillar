@@ -264,8 +264,16 @@ export function usePactMutations() {
     }
     const txHash = await rawWrite({ ...opts, chainId: pyrisChain.id });
     // The wallet resolves as soon as the tx is signed and sent. Callers refetch
-    // state right after, so wait until Arc has actually mined it.
-    const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+    // state right after, so wait until Arc has actually mined it. Arc finalises
+    // in about a second; anything past 90s means the tx never reached Arc.
+    let receipt;
+    try {
+      receipt = await publicClient.waitForTransactionReceipt({ hash: txHash, timeout: 90_000 });
+    } catch {
+      throw new Error(
+        `Transaction ${txHash} was not confirmed on Arc within 90s. Check that your wallet sent it on Arc (chain 5042), not another network.`
+      );
+    }
     if (receipt.status !== "success") throw new Error(`Transaction reverted: ${txHash}`);
     return txHash;
   };
