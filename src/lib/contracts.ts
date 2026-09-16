@@ -41,7 +41,12 @@ export const addresses = {
   usdc: DEPLOYMENT?.usdc ?? ("0x0000000000000000000000000000000000000000" as Address),
 } as const;
 
-export const USDC_DECIMALS = 6;
+/**
+ * The contract is deployed in native mode (usdcToken = address(0)), so amounts
+ * are msg.value in Arc's native USDC, which the EVM exposes with 18 decimals.
+ * Switch to 6 only if redeployed against the ERC-20 USDC token.
+ */
+export const USDC_DECIMALS = 18;
 
 // ------------------------------------------------------------- formatting
 

@@ -29,7 +29,7 @@ export default function Page() {
       meta={["Version 1.0", "16 September 2026", "~10 min read"]}
       toc={TOC}
       numbered
-      footNote="Spesifikasi teknis PyrisPact.sol yang telah terdeploy di Arc Chain Testnet."
+      footNote="Spesifikasi teknis PyrisPact.sol yang telah terdeploy di Arc Mainnet."
     >
       <Section id="abstract" heading="Abstract">
         <p>
@@ -143,7 +143,7 @@ struct Pact {
           <strong>Arc Chain</strong> menyelesaikan masalah ini dari tingkat protokol:
         </p>
         <ul>
-          <li><strong>Native Gas in USDC:</strong> Transaksi dieksekusi dengan gas fee berdenominasi langsung dalam USDC (6 desimal).</li>
+          <li><strong>Native Gas in USDC:</strong> Transaksi dieksekusi dengan gas fee berdenominasi langsung dalam USDC.</li>
           <li><strong>Single Asset Accounting:</strong> Klien mengunci $1,000 USDC, membayar gas fee $0.001 USDC, dan vendor menerima $1,000 USDC.</li>
           <li><strong>Sub-second Finality:</strong> Konfirmasi blok instan memungkinkan pencairan dana selesai dalam hitungan detik.</li>
         </ul>

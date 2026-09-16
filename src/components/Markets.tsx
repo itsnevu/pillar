@@ -31,6 +31,13 @@ export function Markets() {
             </tr>
           </thead>
           <tbody>
+            {pacts.length === 0 && (
+              <tr>
+                <td colSpan={4} style={{ textAlign: "center", padding: "32px 16px", color: "var(--rusd-muted, #78716c)" }}>
+                  No pacts have been created onchain yet. Open the app to fund the first one.
+                </td>
+              </tr>
+            )}
             {pacts.map((p) => {
               const meta = pactStatusMeta(p.status);
               return (

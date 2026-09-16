@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { USDC_DECIMALS } from "@/lib/contracts";
 import { parseUnits, isAddress, type Address } from "viem";
 import { useAccount } from "wagmi";
 import { usePactMutations } from "@/lib/hooks";
@@ -29,7 +30,7 @@ export function ActionPanel({ onDone }: { onDone?: () => void }) {
 
     try {
       setStatus("Submitting to Arc Chain...");
-      await createPact(vendor as Address, parseUnits(amount, 6), days * 86400, title, description);
+      await createPact(vendor as Address, parseUnits(amount, USDC_DECIMALS), days * 86400, title, description);
       setStatus("Pact created successfully!");
       setVendor("");
       setAmount("");

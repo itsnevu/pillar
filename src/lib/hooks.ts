@@ -13,49 +13,6 @@ export function useMounted() {
 
 const pactAddress = addresses.pyrisPact as Address;
 
-// Initial demonstration data for seamless preview before contracts are deployed
-const DEMO_PACTS: Pact[] = [
-  {
-    id: 1n,
-    client: "0x1111111111111111111111111111111111111111" as Address,
-    vendor: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" as Address,
-    amount: 3500_000000n, // $3,500 USDC
-    deadline: BigInt(Math.floor(Date.now() / 1000) + 86400 * 5),
-    status: PactStatus.SUBMITTED,
-    title: "Arc Chain Smart Contract Integration",
-    description: "Write PyrisEscrow.sol with milestone release & comprehensive Foundry test coverage.",
-    submissionNote: "https://github.com/itsnevu/pyris/pull/14",
-    createdAt: BigInt(Math.floor(Date.now() / 1000) - 86400 * 3),
-    submittedAt: BigInt(Math.floor(Date.now() / 1000) - 3600 * 4),
-  },
-  {
-    id: 2n,
-    client: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" as Address,
-    vendor: "0x2222222222222222222222222222222222222222" as Address,
-    amount: 1800_000000n, // $1,800 USDC
-    deadline: BigInt(Math.floor(Date.now() / 1000) + 86400 * 12),
-    status: PactStatus.FUNDED,
-    title: "Editorial Design & Brand Guidelines",
-    description: "Produce typography tokens, vector column marks, and responsive Figma components.",
-    submissionNote: "",
-    createdAt: BigInt(Math.floor(Date.now() / 1000) - 86400),
-    submittedAt: 0n,
-  },
-  {
-    id: 3n,
-    client: "0x3333333333333333333333333333333333333333" as Address,
-    vendor: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" as Address,
-    amount: 5000_000000n, // $5,000 USDC
-    deadline: BigInt(Math.floor(Date.now() / 1000) - 86400 * 2),
-    status: PactStatus.RELEASED,
-    title: "Institutional Custody Security Audit",
-    description: "Full threat modeling and verification of multi-sig settlement flows.",
-    submissionNote: "https://audit.pyris.tech/reports/q3.pdf",
-    createdAt: BigInt(Math.floor(Date.now() / 1000) - 86400 * 14),
-    submittedAt: BigInt(Math.floor(Date.now() / 1000) - 86400 * 3),
-  },
-];
-
 /**
  * Hook to retrieve all pacts, filtered by client/vendor role
  */
@@ -71,18 +28,14 @@ export function usePacts(userAddress?: Address) {
   });
 
   const pacts: Pact[] = useMemo(() => {
-    if (rawPacts && Array.isArray(rawPacts) && rawPacts.length > 0) {
-      return rawPacts as Pact[];
-    }
-    return DEMO_PACTS;
+    return Array.isArray(rawPacts) ? (rawPacts as Pact[]) : [];
   }, [rawPacts]);
 
   const outgoingPacts = useMemo(() => {
     if (!userAddress) return pacts;
-    const filtered = pacts.filter(
+    return pacts.filter(
       (p) => p.client.toLowerCase() === userAddress.toLowerCase()
     );
-    return filtered.length > 0 ? filtered : pacts;
   }, [pacts, userAddress]);
 
   const incomingPacts = useMemo(() => {

@@ -5,7 +5,7 @@ import { useAccount } from "wagmi";
 import { isAddress, parseUnits, type Address } from "viem";
 import { AppShell, Stat } from "@/components/app/AppShell";
 import { usePacts, usePactMutations, useMounted } from "@/lib/hooks";
-import { fmtUsdc, truncateAddress, fmtDate, pactStatusMeta, PactStatus, type Pact } from "@/lib/contracts";
+import { fmtUsdc, truncateAddress, fmtDate, pactStatusMeta, PactStatus, type Pact, USDC_DECIMALS } from "@/lib/contracts";
 
 export default function DashboardPage() {
   return (
@@ -50,7 +50,7 @@ function PactDashboard() {
     }
 
     try {
-      const amountBigInt = parseUnits(amountUsdc, 6);
+      const amountBigInt = parseUnits(amountUsdc, USDC_DECIMALS);
       const deadlineSeconds = deadlineDays * 86400;
       await createPact(vendorAddress as Address, amountBigInt, deadlineSeconds, title, description);
       setFeedback(`Success! Pact "${title}" created and ${amountUsdc} USDC locked into escrow.`);
