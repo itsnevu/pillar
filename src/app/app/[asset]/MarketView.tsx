@@ -70,6 +70,9 @@ export function MarketView({ symbol }: { symbol: string }) {
   const hasArbiter = pact.arbiter !== zeroAddress;
   const isArbiter = hasArbiter && me === pact.arbiter.toLowerCase();
   const isParty = isClient || isVendor;
+  const deadlinePassed = Number(pact.deadline) * 1000 < Date.now();
+  // The contract only lets the client reclaim after the deadline with nothing submitted.
+  const clientCanRefund = pact.status === PactStatus.FUNDED && deadlinePassed;
 
   const ok = (msg: string) => {
     setIsError(false);
@@ -340,7 +343,7 @@ export function MarketView({ symbol }: { symbol: string }) {
                 </button>
               )}
 
-              {isActive(pact.status) && isParty && (
+              {isActive(pact.status) && (isVendor || (isClient && clientCanRefund)) && (
                 <button
                   onClick={handleRefund}
                   disabled={isPending}
@@ -360,6 +363,13 @@ export function MarketView({ symbol }: { symbol: string }) {
                 </button>
               )}
 
+              {isClient && isActive(pact.status) && !clientCanRefund && (
+                <p className="text-[12.5px] text-muted basis-full">
+                  {pact.status === PactStatus.SUBMITTED
+                    ? "Work has been submitted: release it, or raise a dispute if it does not match the scope."
+                    : `You can reclaim the escrow after the deadline (${fmtDate(pact.deadline)}) if nothing is submitted. Until then only the contractor can cancel.`}
+                </p>
+              )}
               {!connected && !isTerminal(pact.status) && (
                 <p className="text-[12.5px] text-muted">Connect the client or contractor wallet to act on this pact.</p>
               )}

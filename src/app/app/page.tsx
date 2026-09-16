@@ -346,9 +346,12 @@ function PactDashboard() {
                         )}
 
                         {/* Refund Button */}
+                        {/* Vendor may cancel any time; client only after the deadline with no submission. */}
                         {isActive(p.status) &&
-                          (connected?.toLowerCase() === p.client.toLowerCase() ||
-                            connected?.toLowerCase() === p.vendor.toLowerCase()) && (
+                          (connected?.toLowerCase() === p.vendor.toLowerCase() ||
+                            (connected?.toLowerCase() === p.client.toLowerCase() &&
+                              p.status === PactStatus.FUNDED &&
+                              Number(p.deadline) * 1000 < Date.now())) && (
                           <button
                             onClick={() => handleRefund(p.id)}
                             disabled={isPending}
