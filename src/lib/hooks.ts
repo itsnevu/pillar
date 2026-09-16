@@ -251,6 +251,7 @@ export function usePactMutations() {
   const { isLoading: isWaiting, isSuccess } = useWaitForTransactionReceipt({ hash });
   const { chainId } = useAccount();
   const { switchChainAsync } = useSwitchChain();
+  const publicClient = usePublicClient();
 
   /**
    * Every write goes through here so the wallet is on Arc first. A second
@@ -261,7 +262,12 @@ export function usePactMutations() {
     if (chainId !== pyrisChain.id) {
       await switchChainAsync({ chainId: pyrisChain.id });
     }
-    return rawWrite({ ...opts, chainId: pyrisChain.id });
+    const txHash = await rawWrite({ ...opts, chainId: pyrisChain.id });
+    // The wallet resolves as soon as the tx is signed and sent. Callers refetch
+    // state right after, so wait until Arc has actually mined it.
+    const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+    if (receipt.status !== "success") throw new Error(`Transaction reverted: ${txHash}`);
+    return txHash;
   };
 
   /** Native mode: the escrowed amount travels as msg.value. arbiter may be the zero address. */
