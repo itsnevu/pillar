@@ -36,6 +36,13 @@ export function Footer() {
   return (
     <footer className="rusd-footer">
       <section className="rusd-frame turret-technology" aria-label="Network">
+        <img
+          className="turret-technology-art"
+          alt=""
+          width={1536}
+          height={1024}
+          src="/illustrations/pyris-urn.svg"
+        />
         <p>Built on</p>
         <div className="turret-technology-logos">
           <a href="https://arc.network/" aria-label="Arc, Circle's Layer-1 for stablecoin finance">

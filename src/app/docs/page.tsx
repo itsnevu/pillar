@@ -23,50 +23,60 @@ export default function Page() {
     <ProsePage
       eyebrow="Documentation"
       title="Pyris Pact: Programmable B2B Payments"
-      lede="Platform untuk bisnis yang membayar freelancer, vendor, atau agency secara otomatis berdasarkan kondisi yang disepakati di atas Arc Chain."
-      meta={["Updated 16 September 2026", "~6 min read"]}
+      lede="A platform for businesses that pay freelancers, vendors, or agencies automatically, on conditions both sides agreed to, settled on Arc Chain."
+      meta={["Updated 17 September 2026", "~6 min read"]}
       toc={TOC}
     >
       <Section id="overview" heading="01 · Overview: Programmable B2B Payments">
         <p>
-          <strong>Pyris Pact</strong> adalah infrastruktur pembayaran terprogram (<em>programmable payments</em>)
-          yang dirancang khusus untuk entitas bisnis: agency, software house, marketplace B2B, dan kontraktor
-          internasional.
+          <strong>Pyris Pact</strong> is programmable payment infrastructure built for business entities: agencies,
+          software houses, B2B marketplaces, and international contractors.
         </p>
-        <p>
-          Dalam transaksi konvensional, pembayaran lintas batas terhambat oleh dua kutub risiko:
-        </p>
+        <p>In a conventional cross-border engagement, money is held back by two opposing risks:</p>
         <ul>
-          <li><strong>Klien/Agency:</strong> Ragu mengirim uang muka (DP) besar ke vendor/freelancer yang belum teruji karena risiko ditinggal (<em>ghosted</em>).</li>
-          <li><strong>Freelancer/Vendor:</strong> Ragu menyerahkan kode atau aset final sebelum ada jaminan dana tersedia karena risiko tagihan tidak dibayar.</li>
+          <li>
+            <strong>Client / agency:</strong> reluctant to wire a large deposit to an unproven vendor or freelancer,
+            because they might be ghosted.
+          </li>
+          <li>
+            <strong>Freelancer / vendor:</strong> reluctant to hand over final code or assets before funds are
+            guaranteed, because the invoice might never be paid.
+          </li>
         </ul>
         <p>
-          Pyris Pact menyelesaikan masalah ini dengan <strong>Smart Contract Escrow</strong> di jaringan Arc Chain:
-          dana disimpan aman di blockchain dan hanya akan dicairkan setelah hasil pekerjaan disetujui.
+          Pyris Pact removes both with <strong>smart contract escrow</strong> on Arc Chain: the funds sit safely on
+          the blockchain and are only disbursed once the deliverable is approved.
         </p>
       </Section>
 
       <Section id="case-study" heading="Real-World Example: Agency & Freelancer">
         <div className="p-5 rounded-[12px] bg-soft border border-line my-4">
-          <h3 className="text-[16px] font-bold text-ink mb-2">Contoh Skenario Nyata:</h3>
+          <h3 className="text-[16px] font-bold text-ink mb-2">A typical engagement:</h3>
           <p className="text-[13.5px] text-muted leading-relaxed">
-            Sebuah <strong>Agency</strong> merekrut <strong>Freelancer</strong> untuk membangun landing page dan smart contract seharga <strong>$5,000 USDC</strong>:
+            An <strong>agency</strong> hires a <strong>freelancer</strong> to build a landing page and a smart
+            contract for <strong>$5,000 USDC</strong>:
           </p>
           <ol className="list-decimal pl-5 mt-3 space-y-2 text-[13px] text-ink">
             <li>
-              <strong>Locking Dana:</strong> Agency membuat Pact di dashboard dan mendepositkan $5,000 USDC ke dalam smart contract escrow di Arc Chain.
+              <strong>Lock the funds:</strong> the agency creates a Pact in the dashboard and deposits $5,000 USDC
+              into the escrow contract on Arc Chain.
             </li>
             <li>
-              <strong>Pekerjaan Dimulai:</strong> Freelancer dapat melihat langsung di onchain bahwa dana $5,000 USDC telah 100% terkunci dan terjamin aman di kontrak.
+              <strong>Work begins:</strong> the freelancer can verify onchain that the full $5,000 USDC is locked
+              in the contract and cannot be withdrawn unilaterally.
             </li>
             <li>
-              <strong>Submit Deliverable:</strong> Freelancer menyelesaikan pekerjaan dan menyematkan bukti deliverable (link PR GitHub atau link Figma) di smart contract.
+              <strong>Submit the deliverable:</strong> the freelancer finishes the work and records proof of
+              delivery (a GitHub PR or Figma link) in the contract.
             </li>
             <li>
-              <strong>Persetujuan & Pencairan:</strong> Agency memeriksa hasil kerja, merasa puas, dan menekan tombol <strong>&ldquo;Release Funds&rdquo;</strong>.
+              <strong>Approve and release:</strong> the agency reviews the work, is satisfied, and clicks{" "}
+              <strong>&ldquo;Release Funds&rdquo;</strong>.
             </li>
             <li>
-              <strong>Penerimaan Instan:</strong> $5,000 USDC langsung masuk ke wallet freelancer dalam hitungan sub-detik dengan potongan platform <strong>0%</strong> (menghemat fee $1,000 dibanding Upwork/Escrow konvensional).
+              <strong>Instant settlement:</strong> $5,000 USDC lands in the freelancer&rsquo;s wallet in under a
+              second with a <strong>0%</strong> platform fee, saving roughly $1,000 compared with Upwork or a
+              conventional escrow service.
             </li>
           </ol>
         </div>
@@ -74,13 +84,14 @@ export default function Page() {
 
       <Section id="smart-contract-escrow" heading="Smart Contract Escrow Architecture">
         <p>
-          Escrow dikelola sepenuhnya oleh <code>PyrisPact.sol</code>. Tidak ada pihak ketiga atau pengelola
-          platform yang dapat mengambil atau mengalihkan dana yang sedang dikunci.
+          Escrow is managed entirely by <code>PyrisPact.sol</code>. No third party and no platform operator can
+          take or redirect funds while they are locked.
         </p>
         <pre className="p-4 bg-soft rounded-[8px] text-[12px] font-mono overflow-x-auto">
-{`// Membuat dan mendanai escrow milestone baru
+{`// Create and fund a new milestone escrow
 function createPact(
     address vendor,
+    address arbiter,      // optional; address(0) for mutual settlement only
     uint256 amount,
     uint256 deadline,
     string calldata title,
@@ -88,79 +99,86 @@ function createPact(
 ) external payable returns (uint256 pactId);`}
         </pre>
         <p>
-          Begitu dipanggil oleh klien, token USDC otomatis ditarik dari wallet klien dan dikunci di dalam
-          kontrak dengan status <code>FUNDED (0)</code>.
+          When the client calls it, the USDC is pulled from the client&rsquo;s wallet and locked in the contract
+          with status <code>FUNDED (0)</code>.
         </p>
       </Section>
 
       <Section id="conditional-release" heading="Conditional Release upon Approval">
-        <p>
-          Smart contract menjamin prinsip <em>pembayaran setelah pekerjaan disetujui</em>:
-        </p>
+        <p>The contract enforces the principle of <em>payment after approval</em>:</p>
         <ul>
           <li>
-            <strong>Kontraktor submit bukti kerja:</strong> Melalui fungsi <code>submitWork(pactId, note)</code>, status berpindah menjadi <code>SUBMITTED (1)</code>.
+            <strong>Contractor submits proof:</strong> via <code>submitWork(pactId, note)</code>, moving the status
+            to <code>SUBMITTED (1)</code>.
           </li>
           <li>
-            <strong>Persetujuan Klien:</strong> Hanya alamat wallet klien (<code>pact.client</code>) yang berhak memanggil fungsi <code>releaseFunds(pactId)</code>.
+            <strong>Client approves:</strong> only the client&rsquo;s wallet (<code>pact.client</code>) may call{" "}
+            <code>releaseFunds(pactId)</code>.
           </li>
           <li>
-            <strong>Disbursement Otomatis:</strong> Kontrak secara atomik mentransfer 100% nominal USDC ke wallet kontraktor dan mengubah status menjadi <code>RELEASED (2)</code>.
+            <strong>Automatic disbursement:</strong> the contract atomically transfers 100% of the USDC to the
+            contractor and sets the status to <code>RELEASED (2)</code>.
           </li>
         </ul>
       </Section>
 
       <Section id="invoice-tracking" heading="Invoice & Milestone Payment Tracking">
         <p>
-          Pyris Pact berfungsi sebagai <em>payment tracker</em> onchain permanen. Setiap transaksi memiliki
-          nomor identifikasi (<code>pactId</code>), timestamp pembuatan, tenggat waktu (deadline), catatan deliverable,
-          dan status verifikasi yang dapat diaudit oleh kedua belah pihak secara transparan melalui block explorer Arc Chain.
+          Pyris Pact doubles as a permanent onchain payment tracker. Every Pact has an identifier (
+          <code>pactId</code>), a creation timestamp, a deadline, the deliverable note, and a verifiable status. Every
+          state change is an event on Arc, so both parties can audit the full history through the block explorer.
         </p>
       </Section>
 
       <Section id="arc-chain-gas" heading="Why Arc Chain & Native USDC Gas">
         <p>
-          Arc Chain (Circle EVM Layer-1) adalah fondasi ideal untuk produk B2B payment karena menggunakan
-          <strong> USDC sebagai native gas currency</strong>.
+          Arc Chain (Circle&rsquo;s EVM Layer-1) is the natural home for B2B payments because it uses{" "}
+          <strong>USDC as the native gas currency</strong>.
         </p>
         <p>
-          Di jaringan blockchain biasa, bisnis dipusingkan karena harus membeli token volatil seperti ETH hanya
-          untuk membayar gas fee. Di Arc Chain:
+          On most blockchains a business must first buy a volatile token such as ETH just to pay for gas. On Arc
+          Chain:
         </p>
         <ul>
-          <li>Klien menyimpan USDC, membayar gas fee pecahan sen dalam USDC.</li>
-          <li>Kontraktor menerima USDC bersih tanpa risiko fluktuasi harga.</li>
-          <li>Pembukuan akuntansi perusahaan menjadi sangat sederhana (100% berbasis dollar AS).</li>
+          <li>The client holds USDC and pays a fraction of a cent in USDC for gas.</li>
+          <li>The contractor receives clean USDC with no price exposure.</li>
+          <li>Company bookkeeping stays simple: everything is denominated in US dollars.</li>
         </ul>
       </Section>
 
       <Section id="refund-protection" heading="Timeout Refunds & Contractor Guarantees">
-        <p>
-          Bagaimana jika salah satu pihak tidak responsif?
-        </p>
+        <p>What happens when one side stops responding?</p>
         <ul>
           <li>
-            <strong>Proteksi Klien (Timeout Refund):</strong> Jika deadline proyek telah lewat dan kontraktor belum melakukan submit deliverable, klien berhak memanggil <code>refund(pactId)</code> untuk menarik kembali 100% saldo USDC tanpa potongan.
+            <strong>Client protection (timeout refund):</strong> if the deadline passes and the contractor has not
+            submitted a deliverable, the client may call <code>refund(pactId)</code> to reclaim 100% of the USDC.
           </li>
           <li>
-            <strong>Pembatalan Sukarela Kontraktor:</strong> Jika terjadi perubahan kesepakatan, kontraktor dapat secara sukarela memicu refund kapan saja untuk mengembalikan dana ke klien.
+            <strong>Voluntary cancellation:</strong> the contractor may trigger a refund at any time to return the
+            funds to the client, for example when the scope changes.
           </li>
           <li>
-            <strong>Flag Sengketa (Dispute):</strong> Jika deliverable tidak sesuai spesifikasi, salah satu pihak dapat mengaktifkan status <code>DISPUTED (4)</code>. Escrow dibekukan dan hanya bisa diselesaikan lewat <em>split</em> yang disetujui kedua pihak (<code>proposeResolution</code>), atau lewat putusan <em>arbiter</em> jika alamat arbiter ditunjuk saat pact dibuat.
+            <strong>Disputes:</strong> if the deliverable does not match the scope, either party can set the status
+            to <code>DISPUTED (4)</code>. The escrow is frozen and can only be settled by a split both parties
+            agree on (<code>proposeResolution</code>), or by the ruling of an <em>arbiter</em> if one was named when
+            the Pact was created.
           </li>
           <li>
-            <strong>Submit terlambat ditolak:</strong> kontraktor tidak bisa memanggil <code>submitWork</code> setelah deadline, jadi hak refund klien tidak bisa didahului. Klien bisa memberi waktu tambahan lewat <code>extendDeadline</code>.
+            <strong>Late submissions are rejected:</strong> the contractor cannot call <code>submitWork</code> after
+            the deadline, so the client&rsquo;s refund right cannot be pre-empted. The client can grant more time
+            with <code>extendDeadline</code>.
           </li>
           <li>
-            <strong>Payout tidak bisa diblokir:</strong> jika dompet penerima menolak transfer, dana masuk ke <code>pendingWithdrawals</code> dan bisa ditarik kapan saja lewat <code>withdraw()</code>.
+            <strong>Payouts cannot be blocked:</strong> if a recipient wallet rejects the transfer, the amount is
+            credited to <code>pendingWithdrawals</code> and can be claimed at any time with <code>withdraw()</code>.
           </li>
         </ul>
       </Section>
 
       <Section id="using-the-dashboard" heading="Using the Dashboard">
         <p>
-          Kunjungi <Link href="/app">Pact Dashboard</Link> untuk membuat escrow baru, memantau invoice masuk/keluar,
-          dan menyetujui pencairan dana secara langsung.
+          Open the <Link href="/app">Pact Dashboard</Link> to create a new escrow, track incoming and outgoing
+          milestones, and approve payouts directly from your wallet.
         </p>
       </Section>
     </ProsePage>

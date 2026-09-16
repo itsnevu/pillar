@@ -74,6 +74,13 @@ export function Faq() {
           </Link>
           .
         </p>
+        <img
+          className="rusd-faq-art"
+          alt=""
+          width={1536}
+          height={1024}
+          src="/illustrations/pyris-arch.svg"
+        />
       </div>
       <div className="rusd-faq-list">
         {FAQ.map(({ q, a }) => (

@@ -770,3 +770,11 @@ html,body{min-width:320px;background:var(--rusd-bg)}
 .rusd-faq-heading p .rusd-text-link{font-size:inherit;font-weight:650;text-decoration:underline;text-decoration-color:#d6d3d1;text-underline-offset:3px;white-space:normal}
 .rusd-faq-heading p .rusd-text-link:hover{text-decoration-color:var(--rusd-ink)}
 
+
+/* Pyris: engraving accents (same family as the hero column) for the explainer,
+   FAQ, and footer. Multiply blend keeps the paper tone underneath. */
+.rusd-explainer-heading{position:relative}
+.rusd-explainer-art{display:block;flex:0 0 auto;width:auto;height:150px;margin:-30px 0 -18px;object-fit:contain;mix-blend-mode:multiply;pointer-events:none}
+.rusd-faq-art{display:block;width:100%;max-width:340px;height:auto;margin:28px 0 0 -10px;object-fit:contain;mix-blend-mode:multiply;pointer-events:none}
+.turret-technology-art{display:block;width:100%;max-width:420px;height:170px;margin:0 auto 4px;object-fit:cover;object-position:center 72%;mix-blend-mode:multiply;pointer-events:none}
+@media (max-width: 760px){.rusd-explainer-art{display:none}.rusd-faq-art{max-width:260px;margin-top:20px}.turret-technology-art{height:130px}}

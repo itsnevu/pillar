@@ -4,6 +4,13 @@ export function HowItWorks() {
       <div className="rusd-explainer-heading">
         <h2 id="how-heading">How Pyris Pact works</h2>
         <p>Three simple steps. Trustless milestone escrow from agreement to settlement.</p>
+        <img
+          className="rusd-explainer-art"
+          alt=""
+          width={1536}
+          height={1024}
+          src="/illustrations/pyris-scales.svg"
+        />
       </div>
       <ol className="rusd-borrow-flow">
         <li>
