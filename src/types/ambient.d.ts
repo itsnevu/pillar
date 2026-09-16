@@ -163,7 +163,7 @@ declare module "wagmi" {
   export const useAccount: () => { address?: `0x${string}`; isConnected: boolean; chainId?: number };
   export const useConnect: () => { connect: (opts: any) => void; connectors: any[]; isPending: boolean; error?: any };
   export const useDisconnect: () => { disconnect: () => void };
-  export const useSwitchChain: () => { switchChain: (opts: any) => void };
+  export const useSwitchChain: () => { switchChain: (opts: any) => void; switchChainAsync: (opts: any) => Promise<any> };
   export const useConfig: () => any;
   export const usePublicClient: () => any;
   export const useReadContract: (opts: any) => any;

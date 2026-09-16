@@ -1,9 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
+import {
+  useAccount,
+  useReadContract,
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  usePublicClient,
+  useSwitchChain,
+} from "wagmi";
 import { zeroAddress, type Address } from "viem";
 import { PyrisPactAbi, addresses, DEPLOY_BLOCK, type Pact, PactStatus } from "./contracts";
+import { pyrisChain } from "./chain";
 
 const noop = () => () => {};
 /** true after hydration, false during SSR */
@@ -239,8 +247,22 @@ export function usePendingWithdrawal(account: Address | undefined) {
  * Hook for executing Pact escrow actions
  */
 export function usePactMutations() {
-  const { writeContractAsync, data: hash, isPending } = useWriteContract();
+  const { writeContractAsync: rawWrite, data: hash, isPending } = useWriteContract();
   const { isLoading: isWaiting, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { chainId } = useAccount();
+  const { switchChainAsync } = useSwitchChain();
+
+  /**
+   * Every write goes through here so the wallet is on Arc first. A second
+   * injected wallet (Rabby, Phantom) often sits on Ethereum mainnet; without
+   * this the transaction would be sent there and fail for lack of ETH.
+   */
+  const writeContractAsync = async (opts: Record<string, unknown>) => {
+    if (chainId !== pyrisChain.id) {
+      await switchChainAsync({ chainId: pyrisChain.id });
+    }
+    return rawWrite({ ...opts, chainId: pyrisChain.id });
+  };
 
   /** Native mode: the escrowed amount travels as msg.value. arbiter may be the zero address. */
   const createPact = async (
