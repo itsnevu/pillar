@@ -58,7 +58,6 @@ const FOOTER_LINKS: { href: string; label: string }[] = [
   { href: LINKS.terms, label: "Terms" },
   { href: LINKS.privacy, label: "Privacy" },
   ...(LINKS.x ? [{ href: LINKS.x, label: "X" }] : []),
-  ...(LINKS.telegram ? [{ href: LINKS.telegram, label: "Telegram" }] : []),
 ];
 
 export function Footer() {

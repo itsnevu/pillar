@@ -1,17 +1,14 @@
 /**
  * Every outbound link on the site, in one place.
  *
- * Social handles come from the environment so that publishing them is a deploy
- * variable rather than a code change. When a handle is unset the link is simply
- * not rendered — better than shipping an `href="#"` that goes nowhere.
+ * The X handle can be overridden from the environment so a move is a deploy
+ * variable rather than a code change.
  */
 const env = (v: string | undefined) => (v && v.trim().length > 0 ? v.trim() : undefined);
 
 export const LINKS = {
-  /** undefined until NEXT_PUBLIC_X_URL is set. */
-  x: env(process.env.NEXT_PUBLIC_X_URL),
-  /** undefined until NEXT_PUBLIC_TELEGRAM_URL is set. */
-  telegram: env(process.env.NEXT_PUBLIC_TELEGRAM_URL),
+  /** The only official social account. Override with NEXT_PUBLIC_X_URL if it ever moves. */
+  x: env(process.env.NEXT_PUBLIC_X_URL) ?? "https://x.com/pyristech",
   support: "mailto:support@pyris.tech",
   // Live pages in this app:
   app: "/app",

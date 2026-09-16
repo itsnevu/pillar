@@ -1,7 +1,7 @@
 /* Pyris Finance — Turret stylesheet (turret.capital), used verbatim except:
    - @font-face for /fonts/turret-editorial removed; the display face comes from next/font (layout.tsx, --font-display)
    - hard-coded "Libre Caslon Text" font stacks remapped to var(--rusd-display)
-   - url() assets remapped to /brand/pyris-mark.svg and /illustrations/pyris-column.svg
+   - url() assets remapped to /brand/pyris-mark.png and /illustrations/pyris-column.svg
    Pyris-specific reconciliation rules are appended at the end of the file. */
 :root{--rusd-bg: #fafaf9;--rusd-surface: #ffffff;--rusd-ink: #292524;--rusd-muted: #57534e;--rusd-line: #e7e5e4;--rusd-primary: #292524;--rusd-primary-hover: #292524;--rusd-bright: #292524;--rusd-soft: #f2f1ee;--rusd-frost: #fafaf9;--rusd-warning: #d97645;--rusd-display: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;--rusd-max-width: 1040px}
 body{margin:0;color:var(--rusd-ink);font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif}
@@ -129,7 +129,7 @@ body{margin:0;color:var(--rusd-ink);font-family:ui-sans-serif,system-ui,-apple-s
 .rusd-hero-proof span{position:relative;padding-left:15px}
 .rusd-hero-proof span:before{position:absolute;top:.48em;left:0;width:6px;height:6px;background:var(--rusd-bright);border-radius:50%;content:""}
 .rusd-position-preview{position:relative;isolation:isolate;overflow:hidden;min-width:0;max-width:100%;padding:28px;color:#fff;background:#292524;border-radius:16px;box-shadow:none;animation:dockyard-composer-arrive .7s cubic-bezier(.16,1,.3,1) both}
-.rusd-position-preview:before{position:absolute;z-index:-1;right:-70px;bottom:-92px;width:310px;height:310px;background:url(/brand/pyris-mark.svg) center / contain no-repeat;content:"";filter:brightness(0) invert(1);opacity:.045;transform:rotate(-8deg)}
+.rusd-position-preview:before{position:absolute;z-index:-1;right:-70px;bottom:-92px;width:310px;height:310px;background:url(/brand/pyris-mark.png) center / contain no-repeat;content:"";filter:brightness(0) invert(1);opacity:.045;transform:rotate(-8deg)}
 @keyframes dockyard-composer-arrive{0%{clip-path:inset(0 0 100% 0 round 16px);filter:blur(8px);transform:translateY(18px)}to{clip-path:inset(0 0 0 0 round 16px);filter:blur(0);transform:translateY(0)}}
 .rusd-position-risk-heading,.rusd-position-risk-scale,.rusd-position-safeguards{display:flex;align-items:center;justify-content:space-between}
 .rusd-position-head{margin-bottom:24px}
@@ -207,7 +207,7 @@ body{margin:0;color:var(--rusd-ink);font-family:ui-sans-serif,system-ui,-apple-s
 .rusd-earn-learn:hover{color:var(--rusd-primary-hover)}
 .rusd-earn-learn:focus-visible,.rusd-earn-action:focus-visible{outline:3px solid rgba(41,37,36,.28);outline-offset:3px}
 .rusd-earn-mechanism{position:relative;isolation:isolate;overflow:hidden;min-width:0;padding:28px;color:#fff;background:#292524;border-radius:16px;box-shadow:none;animation:dockyard-composer-arrive .7s cubic-bezier(.16,1,.3,1) both}
-.rusd-earn-mechanism:before{position:absolute;z-index:-1;right:-78px;bottom:-96px;width:300px;height:300px;background:url(/brand/pyris-mark.svg) center / contain no-repeat;content:"";filter:brightness(0) invert(1);opacity:.045;transform:rotate(8deg)}
+.rusd-earn-mechanism:before{position:absolute;z-index:-1;right:-78px;bottom:-96px;width:300px;height:300px;background:url(/brand/pyris-mark.png) center / contain no-repeat;content:"";filter:brightness(0) invert(1);opacity:.045;transform:rotate(8deg)}
 .rusd-earn-mechanism-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}
 .rusd-earn-mechanism-head strong{font-size:18px;font-weight:700;letter-spacing:-.02em}
 .rusd-earn-mechanism-head span{padding:7px 10px;color:#e7e5e4;background:#d6d3d11c;border-radius:999px;font-size:11px;font-weight:680}

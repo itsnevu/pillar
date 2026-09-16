@@ -2,19 +2,9 @@ import Link from "next/link";
 import { ConnectButton } from "@/components/ConnectButton";
 import { HeaderNavigation } from "@/components/HeaderNavigation";
 
-/** Inline column glyph (same drawing as /brand/pyris-mark.svg). Used by the /app shell. */
+/** The Pyris mark (public/brand/pyris-mark.png). Used by the /app shell. */
 export function PyrisMark({ size = 30 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 36 36" fill="none" aria-hidden="true">
-      <rect x="4" y="4" width="28" height="4.2" rx="0.6" fill="#292524" />
-      <path d="M7 8.2h22l-2.6 3.6H9.6Z" fill="#292524" />
-      <rect x="10.4" y="11.8" width="3.9" height="14.6" fill="#292524" />
-      <rect x="16.05" y="11.8" width="3.9" height="14.6" fill="#292524" />
-      <rect x="21.7" y="11.8" width="3.9" height="14.6" fill="#292524" />
-      <path d="M9.6 26.4h16.8l2.6 3.4H7Z" fill="#292524" />
-      <rect x="4" y="29.8" width="28" height="3.6" rx="0.6" fill="#292524" />
-    </svg>
-  );
+  return <img alt="" aria-hidden="true" height={size} width={size} src="/brand/pyris-mark.png" style={{ display: "block" }} />;
 }
 
 export function Banner() {
@@ -34,7 +24,7 @@ export function Header() {
         <Link aria-label="Pyris home" className="rusd-brand-link" href="/">
           <span aria-label="Pyris" className="dockyard-logo" role="img" style={{ height: 36 }}>
             <span aria-hidden="true" className="dockyard-logo-mark-frame" style={{ height: 36, width: 36 }}>
-              <img alt="" className="dockyard-logo-mark" height={36} width={36} src="/brand/pyris-mark.svg" />
+              <img alt="" className="dockyard-logo-mark" height={36} width={36} src="/brand/pyris-mark.png" />
             </span>
             <span className="dockyard-logo-wordmark" style={{ fontSize: "23.76px" }}>
               pyris.
