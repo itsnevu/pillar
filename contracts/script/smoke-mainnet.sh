@@ -16,8 +16,9 @@ PACT=$(python -c "import json;print(json.load(open('deployments/5042.json'))['py
 status() { python -c "import json,sys;d=json.load(sys.stdin);print(d['status'], d['transactionHash'])"; }
 
 VENDOR_JSON=$(cast wallet new --json)
-VENDOR=$(echo "$VENDOR_JSON" | python -c "import json,sys;print(json.load(sys.stdin)[0]['address'])")
-VENDOR_KEY=$(echo "$VENDOR_JSON" | python -c "import json,sys;print(json.load(sys.stdin)[0]['private_key'])")
+# `cast wallet new --json` returns a list on some versions and an object on others.
+VENDOR=$(echo "$VENDOR_JSON" | python -c "import json,sys;d=json.load(sys.stdin);d=d[0] if isinstance(d,list) else d;print(d['address'])")
+VENDOR_KEY=$(echo "$VENDOR_JSON" | python -c "import json,sys;d=json.load(sys.stdin);d=d[0] if isinstance(d,list) else d;print(d['private_key'])")
 echo "contract : $PACT"
 echo "vendor   : $VENDOR (throwaway)"
 
