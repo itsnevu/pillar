@@ -1,0 +1,153 @@
+/* ============================================================
+   Material & motion layer (UI upgrade, Sep 2026).
+   Pyris is paper: warm off-white ground, dark ink, terracotta accent.
+   This layer gives that paper depth without turning it into glass-on-black:
+   ink-tinted shadows (never grey), a frosted top bar, a warm light behind
+   the hero, reveal-on-scroll, and press/sheen feedback on actions.
+   Additive only; layout is untouched.
+   ============================================================ */
+
+:root {
+  --scroll-progress: 0;
+  --fx-shadow-raised:
+    0 1px 2px rgba(41, 37, 36, 0.06),
+    0 6px 18px -8px rgba(41, 37, 36, 0.16);
+  --fx-shadow-lifted:
+    0 2px 4px rgba(41, 37, 36, 0.06),
+    0 16px 36px -14px rgba(41, 37, 36, 0.24);
+  --fx-edge: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(41, 37, 36, 0.06);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+/* Warm light behind the page: accent-tinted top-left, cool paper elsewhere. */
+body { position: relative; isolation: isolate; }
+body::before {
+  content: "";
+  position: fixed; inset: -10% 0 0 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(60% 45% at 8% 0%, rgba(217, 118, 69, 0.10), transparent 60%),
+    radial-gradient(50% 40% at 100% 100%, rgba(130, 58, 36, 0.06), transparent 60%);
+}
+
+/* Scroll progress: a 2px accent line at the very top. */
+.fx-progress {
+  position: fixed; top: 0; left: 0; height: 2px; width: 100%; z-index: 60; pointer-events: none;
+  transform-origin: 0 50%;
+  transform: scaleX(var(--scroll-progress));
+  background: linear-gradient(90deg, rgba(217, 118, 69, 0.4), var(--accent));
+}
+
+/* Frosted top bar. */
+.rusd-topbar-inner {
+  background: rgba(255, 255, 255, 0.72) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  box-shadow: var(--fx-edge), var(--fx-shadow-raised) !important;
+}
+
+/* Panels get depth: a top highlight, a hairline, and an ink-tinted shadow. */
+.rusd-market-panel,
+.rusd-borrow-flow,
+.dockyard-borrow-panel,
+.rusd-info,
+.rusd-how-grid > *,
+.fx-card,
+main [class*='rounded-[12px]'] {
+  box-shadow: var(--fx-edge), var(--fx-shadow-raised) !important;
+  transition: box-shadow 220ms ease, transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.rusd-position-preview {
+  box-shadow: 0 24px 48px -20px rgba(41, 37, 36, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+@media (pointer: fine) {
+  .rusd-how-grid > *:hover,
+  .fx-card:hover,
+  main [class*='rounded-[12px]']:hover {
+    box-shadow: var(--fx-edge), var(--fx-shadow-lifted) !important;
+    transform: translateY(-2px);
+  }
+}
+
+/* Pointer spotlight: a faint warm highlight that follows the mouse across a panel. */
+@media (pointer: fine) {
+  .rusd-market-panel, .rusd-borrow-flow > li, .rusd-how-grid > *, .fx-card, main [class*='rounded-[12px]'] {
+    position: relative;
+  }
+  .rusd-market-panel::before,
+  .rusd-borrow-flow > li::before,
+  .rusd-how-grid > *::before,
+  .fx-card::before,
+  main [class*='rounded-[12px]']::before {
+    content: "";
+    position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 0;
+    opacity: 0; transition: opacity 240ms ease;
+    background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(217, 118, 69, 0.09), transparent 60%);
+  }
+  .rusd-market-panel:hover::before,
+  .rusd-borrow-flow > li:hover::before,
+  .rusd-how-grid > *:hover::before,
+  .fx-card:hover::before,
+  main [class*='rounded-[12px]']:hover::before { opacity: 1; }
+  main [class*='rounded-[12px]'] > * { position: relative; z-index: 1; }
+}
+
+/* Reveal on scroll. Hidden only once JS has flagged .fx-ready, so crawlers and no-JS get everything. */
+.fx-ready .reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 640ms cubic-bezier(0.2, 0.8, 0.2, 1) var(--reveal-delay, 0ms),
+    transform 640ms cubic-bezier(0.2, 0.8, 0.2, 1) var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+.fx-ready .reveal.is-in { opacity: 1; transform: none; }
+.rusd-hero .reveal { --reveal-delay: 0ms; }
+@media (prefers-reduced-motion: reduce) {
+  .fx-ready .reveal { opacity: 1; transform: none; transition: none; }
+  .fx-progress { display: none; }
+}
+
+/* Primary actions: press feedback, lift and a sheen sweep on hover. */
+.dockyard-wallet-button,
+.rusd-action {
+  position: relative;
+  overflow: hidden;
+}
+.dockyard-wallet-button { transition: background 0.16s ease-out, transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s !important; }
+.dockyard-wallet-button:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -10px rgba(130, 58, 36, 0.55); }
+.dockyard-wallet-button:active { transform: translateY(0) scale(0.98); box-shadow: none; }
+.dockyard-wallet-button::after,
+.rusd-action::after {
+  content: "";
+  position: absolute; top: 0; bottom: 0; left: -60%; width: 40%; pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-18deg);
+  transition: left 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dockyard-wallet-button:hover::after,
+.rusd-action:hover::after { left: 120%; }
+
+/* Inputs: an inset well with a warm focus ring. */
+main input, main select, main textarea {
+  transition: box-shadow 0.18s, border-color 0.18s;
+  box-shadow: inset 0 1px 2px rgba(41, 37, 36, 0.06);
+}
+main input:focus, main select:focus, main textarea:focus {
+  outline: none;
+  border-color: var(--accent) !important;
+  box-shadow: inset 0 1px 2px rgba(41, 37, 36, 0.06), 0 0 0 3px rgba(217, 118, 69, 0.18);
+}
+
+/* Table rows: a warm tint on hover instead of flat frost. */
+.rusd-market-table tbody tr:hover { background: rgba(217, 118, 69, 0.05) !important; }
+
+/* Page enter: content fades in on route change. */
+.rusd-main, main { animation: fx-enter 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes fx-enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .rusd-main, main { animation: none; } }
+
+/* Text selection in the brand accent. */
+::selection { background: rgba(217, 118, 69, 0.28); }

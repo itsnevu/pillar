@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Libre_Caslon_Text } from "next/font/google";
 import "./globals.css";
+import "@/styles/effects.css";
 import { Providers } from "@/components/Providers";
+import Effects from "@/components/Effects";
 import { SITE_URL } from "@/lib/links";
 
 const display = Libre_Caslon_Text({
@@ -46,6 +48,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${display.variable} h-full`}>
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
+        <Effects />
       </body>
     </html>
   );
