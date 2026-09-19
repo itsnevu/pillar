@@ -182,7 +182,7 @@ struct Pact {
               <td className="py-2 pr-4">ERC-20</td>
               <td className="py-2 pr-4">USDG, 6 decimals</td>
               <td className="py-2 pr-4">ETH, a few cents</td>
-              <td className="py-2 font-mono text-[11.5px]">see /app (Smart Contract Verification)</td>
+              <td className="py-2 font-mono text-[11.5px]">0xf7c81a882594b3f3ddd969ebfa750e30eedaead3</td>
             </tr>
           </tbody>
         </table>
@@ -282,7 +282,7 @@ struct Pact {
         <p>
           Pyris Pact modernises real-world B2B payment infrastructure with programmable escrow, instant conditional
           payments, and stablecoin-denominated invoice tracking on Arc and Robinhood Chain. The contract is deployed
-          on Arc Mainnet (source verified on Sourcify) and on Robinhood Chain (ERC-20 mode against USDG).
+          on Arc Mainnet (source verified on Sourcify) and on Robinhood Chain at <code>0xf7c81a882594b3f3ddd969ebfa750e30eedaead3</code> (ERC-20 mode against USDG, block 67358826).
         </p>
         <p>
           Open the production <Link href="/app">Pact Dashboard</Link> or read the{" "}

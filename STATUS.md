@@ -3,6 +3,7 @@
 ## Dual chain (20 Sep 2026)
 - Pyris Pact sekarang jalan di **Arc** (native USDC, mode native) dan **Robinhood Chain** (chain 4663, mode ERC-20, escrow USDG 6 desimal, gas ETH).
 - Registry network `src/lib/chains.ts`; network terpilih `src/lib/network.tsx` (switcher di header, link `?chain=4663`); relay RPC `/api/rpc/4663` karena RPC Robinhood diblokir ISP Indonesia.
+- **Sudah terdeploy di Robinhood Chain (20 Sep 2026): `0xf7c81a882594b3f3ddd969ebfa750e30eedaead3`**, block 67358826, deployer `0xCd44c4c02F0bfb464B6FbeA8eC8603d1797F9793` (`contracts/deployments/4663.json`).
 - Deploy Robinhood tanpa Foundry: `PRIVATE_KEY=0x… npm run deploy:robinhood` (`scripts/deploy-robinhood.mjs`, pakai bytecode di `contracts/out`). Hasil ditulis ke `contracts/deployments/4663.json` dan `src/lib/generated/deployments.ts`.
 - Di VPS: `git pull`, `npm install`, `npm run abi:sync` (tanpa DEPLOYMENT_FILE, map semua chain), `npm run build`, restart.
 

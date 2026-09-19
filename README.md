@@ -9,7 +9,7 @@ Dual chain. On **Arc** (Circle's Layer-1 EVM network) gas is paid directly in **
 | Network | Chain id | Mode | Escrow asset | Gas | Contract |
 |---|---|---|---|---|---|
 | Arc Mainnet | 5042 | native | USDC (18 dec) | USDC | `0xb5f905f48321F44e379d8680e947dDd05830AF62` |
-| Robinhood Chain | 4663 | ERC-20 | USDG (6 dec) `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` | ETH | `contracts/deployments/4663.json` |
+| Robinhood Chain | 4663 | ERC-20 | USDG (6 dec) `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` | ETH | `0xf7c81a882594b3f3ddd969ebfa750e30eedaead3` |
 
 Registry: `src/lib/chains.ts`. Selected network: `src/lib/network.tsx` (header switcher, `?chain=` links). Robinhood RPC relay: `src/app/api/rpc/[chainId]/route.ts`.
 
