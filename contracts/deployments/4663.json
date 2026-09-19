@@ -1,0 +1,12 @@
+{
+  "chainId": 4663,
+  "deployer": "0xCd44c4c02F0bfb464B6FbeA8eC8603d1797F9793",
+  "usdc": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+  "pyrisPact": "0xf7c81a882594b3f3ddd969ebfa750e30eedaead3",
+  "deployBlock": 67358826,
+  "token": {
+    "symbol": "USDG",
+    "decimals": 6
+  },
+  "deployedAt": "2026-09-19T20:11:49.728Z"
+}
