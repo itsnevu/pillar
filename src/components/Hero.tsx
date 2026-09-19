@@ -17,7 +17,7 @@ function ArrowIcon() {
 
 const EXPLAINERS = [
   { label: "How milestone escrow works", href: "/docs#escrow-flow" },
-  { label: "Why Arc Chain USDC gas", href: "/docs#arc-chain" },
+  { label: "Arc & Robinhood Chain", href: "/docs#networks" },
 ];
 
 export function Hero() {
@@ -27,8 +27,8 @@ export function Hero() {
         <h1>Programmable B2B Payments.</h1>
         <p className="rusd-hero-copy">
           Lock USDC into trustless milestone escrows for your contractors, freelancers, and agencies.
-          Funds disburse immediately upon deliverable approval. Native USDC gas, zero wire delays, and
-          cryptographic settlement on Arc Chain.
+          Funds disburse immediately upon deliverable approval. Zero wire delays and cryptographic
+          settlement on Arc and Robinhood Chain.
         </p>
         <div style={{ display: "flex", gap: "12px", alignItems: "center", marginTop: "16px", marginBottom: "8px" }}>
           <Link
@@ -91,8 +91,8 @@ export function Hero() {
           Funds remain locked in PyrisPact.sol until deliverables are reviewed and signed off by the client.
         </figcaption>
         <div className="rusd-position-safeguards">
-          <span>Sub-second Arc settlement</span>
-          <span>Native USDC gas fee</span>
+          <span>Arc · native USDC gas</span>
+          <span>Robinhood Chain · USDG escrow</span>
         </div>
       </figure>
     </section>

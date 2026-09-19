@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ConnectButton } from "@/components/ConnectButton";
 import { HeaderNavigation } from "@/components/HeaderNavigation";
+import { NetworkSwitcher } from "@/lib/network";
+import { CHAIN_LIST_TEXT } from "@/lib/chains";
 
 /** The Pyris mark (public/brand/pyris-mark.png). Used by the /app shell. */
 export function PyrisMark({ size = 30 }: { size?: number }) {
@@ -11,7 +13,7 @@ export function Banner() {
   return (
     <aside className="turret-beta-notice" aria-label="Open beta notice">
       <p>
-        <strong>Pyris Pact is in open beta.</strong> Programmable B2B escrow & payments on Arc Chain.
+        <strong>Pyris Pact is in open beta.</strong> Programmable B2B escrow & payments on {CHAIN_LIST_TEXT}.
       </p>
     </aside>
   );
@@ -35,10 +37,8 @@ export function Header() {
         <HeaderNavigation />
 
         <div className="rusd-account">
-          <span className="rusd-network" title="Arc Chain">
-            <span aria-hidden="true" className="rusd-network-dot" />
-            <span className="rusd-network-name">Arc Chain</span>
-          </span>
+          {/* Arc or Robinhood Chain: which deployment the public directory and the app read. */}
+          <NetworkSwitcher />
           <div className="dockyard-wallet-control">
             <div className="dockyard-wallet-control" style={{ opacity: 1, transform: "scale(1)" }}>
               <ConnectButton className="dockyard-wallet-button" label="Connect" />

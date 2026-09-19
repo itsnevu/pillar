@@ -2,12 +2,13 @@ import Link from "next/link";
 
 const FAQ: { q: string; a: any }[] = [
   {
-    q: "Why use Arc Chain for programmable B2B payments?",
+    q: "Which networks does Pyris Pact run on?",
     a: (
       <p>
-        Arc Chain is Circle&apos;s Layer-1 EVM network where the native gas fee is paid directly in
-        <strong> USDC</strong>. Businesses and freelancers never need to purchase or manage volatile tokens
-        just to fund an escrow or submit an invoice.
+        Two. <strong>Arc</strong>, Circle&apos;s Layer-1 where gas is paid directly in native <strong>USDC</strong>,
+        and <strong>Robinhood Chain</strong>, an Ethereum Layer-2 where escrows are held in <strong>USDG</strong>
+        (a 6-decimal dollar stablecoin) and gas costs a few cents of ETH. The same contract runs on both; a pact
+        lives on the network it was created on, and you pick the network in the header.
       </p>
     ),
   },
@@ -36,7 +37,7 @@ const FAQ: { q: string; a: any }[] = [
       <p>
         Traditional platforms like Upwork or Escrow.com charge 10% to 20% in platform cuts and currency
         conversion fees. Pyris Pact operates onchain with <strong>0% platform fee</strong> during open beta.
-        You only pay the sub-cent Arc Chain gas fee (in USDC).
+        You only pay the network gas fee: sub-cent USDC on Arc, a few cents of ETH on Robinhood Chain.
       </p>
     ),
   },
@@ -46,7 +47,7 @@ const FAQ: { q: string; a: any }[] = [
       <p>
         The deliverable proof note can include GitHub pull request URLs, Figma links, IPFS content
         hashes, or encrypted document links. All timestamps and submissions are permanently recorded on
-        Arc Chain.
+        the pact&apos;s chain, Arc or Robinhood Chain.
       </p>
     ),
   },
@@ -67,7 +68,7 @@ export function Faq() {
       <div className="rusd-faq-heading">
         <h2 id="faq-heading">Frequently asked questions</h2>
         <p>
-          Learn how programmable milestone escrows protect both businesses and contractors on Arc Chain.
+          Learn how programmable milestone escrows protect both businesses and contractors on Arc and Robinhood Chain.
           Read the{" "}
           <Link className="rusd-text-link" href="/docs">
             technical documentation

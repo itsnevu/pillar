@@ -1,6 +1,7 @@
 "use client";
 
 import { usePactHistory, type PactEventKind } from "@/lib/hooks";
+import { useNetwork } from "@/lib/network";
 import { AddressLink, TxLink, ProofLink } from "./Explorer";
 
 const LABEL: Record<PactEventKind, string> = {
@@ -37,26 +38,27 @@ function when(ts: number) {
 }
 
 /**
- * Every state transition of a pact with the Arc transaction that proves it.
+ * Every state transition of a pact with the transaction that proves it, on the pact's chain.
  * Built from contract event logs, so it cannot show anything that did not happen.
  */
 export function PactTimeline({ pactId }: { pactId: bigint }) {
   const { events, isLoading, isError } = usePactHistory(pactId);
+  const net = useNetwork();
 
   return (
     <div className="rounded-[12px] border border-line bg-surface p-6">
       <div className="flex items-baseline justify-between border-b border-line pb-3">
         <h3 className="font-semibold text-[15px] text-ink">Onchain Activity</h3>
         <span className="text-[11.5px] text-muted">
-          {events.length} transaction{events.length === 1 ? "" : "s"} on Arc
+          {events.length} transaction{events.length === 1 ? "" : "s"} on {net.name}
         </span>
       </div>
 
       {isLoading && events.length === 0 && (
-        <p className="text-[12.5px] text-muted mt-4">Reading event logs from Arc…</p>
+        <p className="text-[12.5px] text-muted mt-4">Reading event logs from {net.name}…</p>
       )}
       {isError && (
-        <p className="text-[12.5px] text-red-700 mt-4">Could not read event logs from the Arc RPC. Refresh to retry.</p>
+        <p className="text-[12.5px] text-red-700 mt-4">Could not read event logs from the {net.name} RPC. Refresh to retry.</p>
       )}
       {!isLoading && !isError && events.length === 0 && (
         <p className="text-[12.5px] text-muted mt-4">No events found for this pact.</p>

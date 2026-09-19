@@ -1,10 +1,17 @@
-# 🏛️ Pyris Pact — Programmable B2B Payments on Arc Chain
+# 🏛️ Pyris Pact — Programmable B2B Payments on Arc & Robinhood Chain
 
 > Programmable milestone escrow & instant B2B settlement in USDC.
 
 Pyris Pact enables businesses, agencies, and global contractors to lock USDC into trustless milestone escrows. Funds disburse immediately upon deliverable sign-off.
 
-Powered by **Arc Chain** (Circle's Layer-1 EVM network), where network gas fees are paid directly in **USDC**. No volatile gas tokens, no banking wire lags, and 0% platform commission during beta.
+Dual chain. On **Arc** (Circle's Layer-1 EVM network) gas is paid directly in **USDC** and the contract runs in native mode. On **Robinhood Chain** (Arbitrum Orbit L2, chain 4663) the same contract runs in ERC-20 mode against **USDG** with ETH gas of a few cents. No banking wire lags, 0% platform commission during beta.
+
+| Network | Chain id | Mode | Escrow asset | Gas | Contract |
+|---|---|---|---|---|---|
+| Arc Mainnet | 5042 | native | USDC (18 dec) | USDC | `0xb5f905f48321F44e379d8680e947dDd05830AF62` |
+| Robinhood Chain | 4663 | ERC-20 | USDG (6 dec) `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` | ETH | `contracts/deployments/4663.json` |
+
+Registry: `src/lib/chains.ts`. Selected network: `src/lib/network.tsx` (header switcher, `?chain=` links). Robinhood RPC relay: `src/app/api/rpc/[chainId]/route.ts`.
 
 Canonical Domain: **[pyris.tech](https://pyris.tech)**
 
@@ -14,7 +21,8 @@ Canonical Domain: **[pyris.tech](https://pyris.tech)**
 - `contracts/` — Foundry project.
   - `src/PyrisPact.sol` — Core milestone escrow smart contract.
   - `test/PyrisPact.t.sol` — Full lifecycle unit test suite (creation, submissions, approvals, refunds, disputes).
-  - `script/DeployPact.s.sol` — Deployment script for Arc Chain and local Anvil.
+  - `script/DeployPact.s.sol` — Foundry deployment script for Arc Chain and local Anvil.
+  - `../scripts/deploy-robinhood.mjs` — Node/viem deploy to Robinhood Chain from the compiled artifact (no Foundry needed): `npm run deploy:robinhood`.
 - `src/app/` — Next.js App Router:
   - `/` — Landing page with live escrow explorer & traditional fee comparison.
   - `/app` — Pact Dashboard: Outgoing (Client) & Incoming (Contractor) views, Create Escrow modal, Release & Refund actions.
@@ -23,7 +31,7 @@ Canonical Domain: **[pyris.tech](https://pyris.tech)**
   - `/whitepaper` — Technical protocol architecture & state machine specification.
   - `/terms` & `/privacy` — Non-custodial software legal notices.
 - `src/components/` — UI components (`Header`, `Footer`, `Hero`, `Tabs`, `Markets`, `AppShell`, `ConnectButton`).
-- `src/lib/` — `chain.ts` (Arc Chain wagmi configuration), `contracts.ts` (types, addresses, formatters), `hooks.ts` (`usePacts`, `usePactMutations`).
+- `src/lib/` — `chains.ts` (network registry), `network.tsx` (selected network + switcher), `chain.ts` (wagmi config), `contracts.ts` (types, formatters), `hooks.ts` (`usePacts`, `usePactMutations` incl. the ERC-20 approve step).
 
 ---
 

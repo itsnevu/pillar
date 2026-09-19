@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { PyrisMark } from "@/components/Header";
 import { ConnectButton } from "@/components/ConnectButton";
-import { pyrisChain } from "@/lib/chain";
+import { NetworkSwitcher } from "@/lib/network";
+import { CHAIN_LIST_TEXT } from "@/lib/chains";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const path = usePathname();
@@ -18,7 +19,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex-1 bg-bg text-ink">
       <div className="bg-soft text-center text-[12.5px] py-[7px] px-4 text-muted">
         <span className="font-semibold text-ink">Pyris Pact is in open beta.</span> Programmable B2B
-        milestone escrow & settlement on Arc Chain.
+        milestone escrow & settlement on {CHAIN_LIST_TEXT}.
       </div>
       <header className="mx-auto w-full max-w-[1040px] px-5 sm:px-6">
         <div className="flex items-center justify-between h-[88px]">
@@ -39,12 +40,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             ))}
           </nav>
           <div className="flex items-center gap-3">
-            <span className="hidden sm:inline-flex items-center gap-2 rounded-pill border border-line bg-surface px-3 h-9 text-[13px] text-ink">
-              <span className="inline-block size-2 rounded-full bg-accent" />
-              {pyrisChain.name}
-            </span>
+            {/* Pacts live on one chain each; this picks which deployment the dashboard reads and writes. */}
+            <NetworkSwitcher className="hidden sm:inline-flex" />
             <ConnectButton />
           </div>
+        </div>
+        <div className="sm:hidden pb-3">
+          <NetworkSwitcher />
         </div>
       </header>
       <main className="mx-auto w-full max-w-[1040px] px-5 sm:px-6 pb-24">{children}</main>

@@ -1,30 +1,32 @@
 "use client";
 
-import { explorerUrl } from "@/lib/chain";
+import { useNetwork } from "@/lib/network";
 import { explorerAddress, explorerTx } from "@/lib/links";
 import { truncateAddress } from "@/lib/contracts";
 
 const linkClass = "font-mono text-ink underline decoration-dotted underline-offset-2 hover:text-blue-700";
 
-/** An address that links to the block explorer when the chain has one. */
+/** An address that links to the selected network's block explorer when it has one. */
 export function AddressLink({ address, className }: { address: string; className?: string }) {
-  const href = explorerAddress(explorerUrl, address);
+  const net = useNetwork();
+  const href = explorerAddress(net.explorerUrl, address);
   const text = truncateAddress(address);
   if (!href) return <span className={`font-mono ${className ?? ""}`}>{text}</span>;
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" title={address} className={`${linkClass} ${className ?? ""}`}>
+    <a href={href} target="_blank" rel="noopener noreferrer" title={`${address} on ${net.name}`} className={`${linkClass} ${className ?? ""}`}>
       {text}
     </a>
   );
 }
 
-/** A transaction hash that links to the block explorer. */
+/** A transaction hash that links to the selected network's block explorer. */
 export function TxLink({ hash, className, label }: { hash: string; className?: string; label?: string }) {
-  const href = explorerTx(explorerUrl, hash);
+  const net = useNetwork();
+  const href = explorerTx(net.explorerUrl, hash);
   const text = label ?? `${hash.slice(0, 10)}…${hash.slice(-6)}`;
   if (!href) return <span className={`font-mono ${className ?? ""}`}>{text}</span>;
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" title={hash} className={`${linkClass} ${className ?? ""}`}>
+    <a href={href} target="_blank" rel="noopener noreferrer" title={`${hash} on ${net.name}`} className={`${linkClass} ${className ?? ""}`}>
       {text} ↗
     </a>
   );

@@ -39,7 +39,7 @@ export default function Page() {
 
       <Section id="what-the-chain-records" heading="What the chain records">
         <p>
-          Escrow deposits, deliverable submissions, releases, and refunds are recorded on Arc Chain. They
+          Escrow deposits, deliverable submissions, releases, and refunds are recorded on the pact's chain, Arc or Robinhood Chain. They
           are readable by anyone, they are permanent, and they cannot be deleted — by us or by you. That is a
           property of the chain, not a policy choice, and it is worth understanding before your first
           transaction.

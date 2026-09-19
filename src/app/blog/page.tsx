@@ -9,7 +9,7 @@ import { allPosts, formatDate } from "@/lib/posts";
 export const metadata = {
   title: "Blog — Pyris Pact",
   description:
-    "Writing from Pyris Pact on programmable milestone escrow, B2B settlements, and native USDC gas on Arc Chain.",
+    "Writing from Pyris Pact on programmable milestone escrow, B2B settlements, and stablecoin rails on Arc and Robinhood Chain.",
 };
 
 export default function Page() {

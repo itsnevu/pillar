@@ -8,9 +8,8 @@ import { AppShell } from "@/components/app/AppShell";
 import { AddressLink, ProofLink } from "@/components/app/Explorer";
 import { PactTimeline } from "@/components/app/PactTimeline";
 import { usePacts, usePactMutations, useProposal, usePendingWithdrawal } from "@/lib/hooks";
+import { useNetwork } from "@/lib/network";
 import {
-  addresses,
-  fmtUsdc,
   truncateAddress,
   fmtDate,
   pactStatusMeta,
@@ -23,7 +22,7 @@ import {
 function errorText(e: unknown, fallback: string): string {
   const msg = e instanceof Error ? e.message : String(e);
   if (/user rejected|denied/i.test(msg)) return "Transaction cancelled in wallet.";
-  if (/not confirmed on Arc|Transaction reverted/.test(msg)) return msg;
+  if (/not confirmed on|Transaction reverted/.test(msg)) return msg;
   const m = msg.match(/reverted with the following reason:\s*([^\n]+)|Error: (\w+)\(/);
   return m ? `${fallback}: ${m[1] ?? m[2]}` : fallback;
 }
@@ -34,6 +33,9 @@ const inputClass =
 export function MarketView({ symbol }: { symbol: string }) {
   const pactId = BigInt(!isNaN(Number(symbol)) ? Number(symbol) : 0);
   const { address: connected } = useAccount();
+  const net = useNetwork();
+  const sym = net.symbol;
+  const fmtUsdc = net.fmt;
   const { pacts, refetch } = usePacts(connected);
   const { releaseFunds, submitWork, refund, dispute, proposeResolution, arbitrate, withdraw, isPending } =
     usePactMutations();
@@ -55,7 +57,7 @@ export function MarketView({ symbol }: { symbol: string }) {
       <AppShell>
         <div className="pt-12 text-center">
           <h1 className="font-serif text-[28px]">Pact Not Found</h1>
-          <p className="text-muted mt-2">No milestone escrow matching ID #{symbol}.</p>
+          <p className="text-muted mt-2">No milestone escrow matching ID #{symbol} on {net.name}. Pacts live on one network; try switching.</p>
           <Link href="/app" className="inline-block mt-4 underline text-ink">
             ← Back to Dashboard
           </Link>
@@ -95,10 +97,10 @@ export function MarketView({ symbol }: { symbol: string }) {
   const wouldAccept = proposalFromOther && proposal.vendorShareBps === shareBps();
 
   const handleRelease = async () => {
-    if (!confirm(`Confirm release of $${fmtUsdc(pact.amount)} USDC to contractor?`)) return;
+    if (!confirm(`Confirm release of $${fmtUsdc(pact.amount)} ${sym} to contractor?`)) return;
     try {
       await releaseFunds(pact.id);
-      ok("Payment released. USDC disbursed to contractor.");
+      ok(`Payment released. ${sym} disbursed to contractor.`);
       refetch();
     } catch (e) {
       fail(e, "Release failed");
@@ -121,10 +123,10 @@ export function MarketView({ symbol }: { symbol: string }) {
   };
 
   const handleRefund = async () => {
-    if (!confirm("Confirm refund of escrowed USDC back to client?")) return;
+    if (!confirm(`Confirm refund of escrowed ${sym} back to client?`)) return;
     try {
       await refund(pact.id);
-      ok("Refund processed. USDC returned to client.");
+      ok(`Refund processed. ${sym} returned to client.`);
       refetch();
     } catch (e) {
       fail(e, "Refund failed");
@@ -213,7 +215,7 @@ export function MarketView({ symbol }: { symbol: string }) {
         {pending.amount > 0n && (
           <div className="mt-4 p-4 rounded-[8px] bg-amber-50 border border-amber-200 text-amber-900 text-[13px] flex items-center justify-between gap-4 flex-wrap">
             <span>
-              A payout of <strong>${fmtUsdc(pending.amount)} USDC</strong> could not be pushed to your wallet and is
+              A payout of <strong>${fmtUsdc(pending.amount)} {sym}</strong> could not be pushed to your wallet and is
               waiting to be claimed.
             </span>
             <button
@@ -250,7 +252,7 @@ export function MarketView({ symbol }: { symbol: string }) {
           <div className="rounded-[12px] border border-line bg-surface p-5 min-w-[240px]">
             <div className="text-[11px] uppercase tracking-wider text-muted font-semibold">Escrow Value</div>
             <div className="text-[26px] font-bold text-ink mt-1">
-              ${fmtUsdc(pact.amount)} <span className="text-[14px] font-normal text-muted">USDC</span>
+              ${fmtUsdc(pact.amount)} <span className="text-[14px] font-normal text-muted">{sym}</span>
             </div>
             <div className="text-[12px] text-muted mt-1">{meta.desc}</div>
           </div>
@@ -320,7 +322,7 @@ export function MarketView({ symbol }: { symbol: string }) {
           <div className="rounded-[12px] border border-line bg-surface p-6">
             <h3 className="font-semibold text-[15px] text-ink border-b border-line pb-3">Escrow Actions</h3>
             <p className="text-[12.5px] text-muted mt-3">
-              Funds are held by the PyrisPact contract on Arc. Only the parties named above can move them.
+              Funds are held by the PyrisPact contract on {net.name}. Only the parties named above can move them.
             </p>
 
             <div className="mt-5 flex flex-wrap gap-3">
@@ -496,25 +498,27 @@ export function MarketView({ symbol }: { symbol: string }) {
             <div className="font-semibold text-ink mb-2">Smart Contract Verification</div>
             <div className="text-muted space-y-1">
               <div>
-                Network: <strong>Arc Mainnet (ID: 5042)</strong>
+                Network: <strong>{net.name} (ID: {net.id})</strong>
               </div>
               <div>
-                Gas Currency: <strong>Native USDC</strong>
+                Escrow asset: <strong>{net.mode === "native" ? `Native ${sym}` : `${sym} (ERC-20)`}</strong> · Gas: <strong>{net.gasSymbol}</strong>
               </div>
               <div>
-                PyrisPact Contract: <AddressLink address={addresses.pyrisPact} />
+                PyrisPact Contract: {net.pyrisPact ? <AddressLink address={net.pyrisPact} /> : "not deployed"}
               </div>
-              <div>
-                Source:{" "}
-                <a
-                  href={`https://sourcify.dev/server/v2/contract/5042/${addresses.pyrisPact}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline decoration-dotted underline-offset-2 hover:text-blue-700"
-                >
-                  verified on Sourcify ↗
-                </a>
-              </div>
+              {net.pyrisPact && net.sourceUrl && (
+                <div>
+                  Source:{" "}
+                  <a
+                    href={net.sourceUrl(net.pyrisPact)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline decoration-dotted underline-offset-2 hover:text-blue-700"
+                  >
+                    view on {net.id === 5042 ? "Sourcify" : "Blockscout"} ↗
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         </div>

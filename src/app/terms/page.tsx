@@ -3,7 +3,7 @@ import { ProsePage, Section } from "@/components/ProsePage";
 export const metadata = {
   title: "Terms — Pyris Pact",
   description:
-    "Pyris Pact is non-custodial milestone escrow software on Arc Chain. The terms, parameters, and user responsibilities.",
+    "Pyris Pact is non-custodial milestone escrow software on Arc and Robinhood Chain. The terms, parameters, and user responsibilities.",
 };
 
 const TOC = [
@@ -18,22 +18,22 @@ export default function Page() {
     <ProsePage
       eyebrow="Legal"
       title="Terms of Use"
-      lede="Plain language, clear parameters. Pyris Pact is software that interacts directly with smart contracts on Arc Chain."
+      lede="Plain language, clear parameters. Pyris Pact is software that interacts directly with smart contracts on Arc and Robinhood Chain."
       meta={["Updated 16 September 2026"]}
       toc={TOC}
     >
       <Section id="what-this-is" heading="What this is">
         <p>
           Pyris Pact is non-custodial software, not a bank, not an employer, and not an escrow agent of
-          record. It provides an interface to <code>PyrisPact.sol</code> deployed on Arc Chain. Responsibility
+          record. It provides an interface to <code>PyrisPact.sol</code> deployed on Arc and on Robinhood Chain. Responsibility
           for verifying counterparty addresses and milestone deliverables resides entirely with the user.
         </p>
       </Section>
 
       <Section id="what-it-costs" heading="What it costs">
         <p>
-          Pyris Pact charges 0% platform fees during the open beta period. All transactions require standard
-          Arc Chain network gas fees, which are denominated and paid directly in USDC.
+          Pyris Pact charges 0% platform fees during the open beta period. All transactions require the network
+          gas fee: paid in USDC on Arc, and in ETH on Robinhood Chain. On Robinhood Chain the escrow asset is USDG.
         </p>
       </Section>
 

@@ -1,6 +1,6 @@
 import type { Address } from "viem";
 import { PyrisPactAbi, IERC20MetadataAbi } from "./generated/abis";
-import { deployment } from "./generated/deployment";
+import { ALL_CHAINS, DEFAULT_CHAIN, DEFAULT_CHAIN_ID, type ChainConfig } from "./chains";
 
 export { PyrisPactAbi, IERC20MetadataAbi as Erc20Abi };
 
@@ -36,31 +36,31 @@ export type Pact = {
   vendorShareBps: number;
 };
 
-type Deployment = {
-  chainId: number;
-  deployer: Address;
-  usdc?: Address;
-  pyrisPact?: Address;
-  deployBlock?: number;
-} | null;
+/**
+ * Per-chain contract addresses. Pyris is dual chain (Arc + Robinhood Chain); a pact
+ * exists on exactly one of them. Use `useNetwork()` in components; these helpers are
+ * for code that already knows the chain id.
+ */
+export function addressesFor(chainId: number): { pyrisPact: Address; usdc: Address } {
+  const c: ChainConfig | undefined = ALL_CHAINS[chainId];
+  return {
+    pyrisPact: c?.pyrisPact ?? ("0x0000000000000000000000000000000000000000" as Address),
+    usdc: c?.token.address ?? ("0x0000000000000000000000000000000000000000" as Address),
+  };
+}
 
-export const DEPLOYMENT = deployment as unknown as Deployment;
-export const hasDeployment = DEPLOYMENT !== null;
-
-export const addresses = {
-  pyrisPact: DEPLOYMENT?.pyrisPact ?? ("0xb5f905f48321F44e379d8680e947dDd05830AF62" as Address),
-  usdc: DEPLOYMENT?.usdc ?? ("0x0000000000000000000000000000000000000000" as Address),
-} as const;
-
-/** First block to scan for PyrisPact events; nothing exists before deployment. */
-export const DEPLOY_BLOCK = BigInt(DEPLOYMENT?.deployBlock ?? 0);
+/** Default network's addresses (Arc in production). Prefer addressesFor / useNetwork. */
+export const addresses = addressesFor(DEFAULT_CHAIN_ID);
+export const hasDeployment = DEFAULT_CHAIN.pyrisPact !== undefined;
+/** First block to scan for PyrisPact events on the default network. */
+export const DEPLOY_BLOCK = DEFAULT_CHAIN.deployBlock;
 
 /**
- * The contract is deployed in native mode (usdcToken = address(0)), so amounts
- * are msg.value in Arc's native USDC, which the EVM exposes with 18 decimals.
- * Switch to 6 only if redeployed against the ERC-20 USDC token.
+ * Amount decimals follow the deployment mode: 18 for native value (Arc, where USDC is the
+ * gas asset), the token's own decimals in ERC-20 mode (Robinhood Chain, USDG = 6).
+ * Use `useNetwork().decimals` in components; this constant is the default network's.
  */
-export const USDC_DECIMALS = 18;
+export const USDC_DECIMALS = DEFAULT_CHAIN.token.decimals;
 
 // ------------------------------------------------------------- formatting
 
@@ -76,6 +76,9 @@ export function fmtUnits(v: bigint | undefined, decimals: number, digits = 2): s
   return `${neg ? "-" : ""}${wholeStr}${digits > 0 ? "." + fracStr : ""}`;
 }
 
+/** Format an escrow amount for a given chain (decimals differ between Arc and Robinhood). */
+export const fmtAmount = (v: bigint | undefined, decimals: number, d = 2) => fmtUnits(v, decimals, d);
+/** Default-network formatter. Prefer `useNetwork().fmt` in components. */
 export const fmtUsdc = (v?: bigint, d = 2) => fmtUnits(v, USDC_DECIMALS, d);
 
 export function truncateAddress(a?: string): string {
@@ -99,7 +102,7 @@ export function pactStatusMeta(status: PactStatus): { label: string; badgeClass:
       return {
         label: "In Escrow",
         badgeClass: "badge-funded",
-        desc: "USDC is locked in contract. Work in progress.",
+        desc: "Funds are locked in contract. Work in progress.",
       };
     case PactStatus.SUBMITTED:
       return {
@@ -111,7 +114,7 @@ export function pactStatusMeta(status: PactStatus): { label: string; badgeClass:
       return {
         label: "Completed & Paid",
         badgeClass: "badge-released",
-        desc: "Client approved work. USDC disbursed to contractor.",
+        desc: "Client approved work. Funds disbursed to contractor.",
       };
     case PactStatus.REFUNDED:
       return {

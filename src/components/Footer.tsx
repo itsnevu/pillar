@@ -48,10 +48,13 @@ export function Footer() {
           <a href="https://arc.network/" aria-label="Arc, Circle's Layer-1 for stablecoin finance">
             <ArcLogo />
           </a>
+          <a href="https://robinhoodchain.blockscout.com/" aria-label="Robinhood Chain, an Ethereum L2 by Robinhood" className="turret-technology-robinhood">
+            Robinhood Chain
+          </a>
         </div>
       </section>
       <div className="rusd-frame rusd-footer-inner">
-        <span>Programmable B2B payments & milestone escrow · Arc Chain</span>
+        <span>Programmable B2B payments & milestone escrow · Arc & Robinhood Chain</span>
         <div className="rusd-footer-links">
           {FOOTER_LINKS.map((l) => (
             <a className="rusd-text-link" href={l.href} key={l.label}>

@@ -11,7 +11,8 @@
     "deploy:local": "cd contracts && forge script script/DeployPact.s.sol:DeployPact --rpc-url ${RPC_URL:-http://127.0.0.1:8545} --broadcast && cd .. && npm run abi:sync",
     "abi:sync": "node scripts/sync-abi.mjs",
     "contracts:build": "cd contracts && forge build",
-    "contracts:test": "cd contracts && forge test -vvv"
+    "contracts:test": "cd contracts && forge test -vvv",
+    "deploy:robinhood": "node scripts/deploy-robinhood.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.102.8",

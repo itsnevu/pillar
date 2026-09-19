@@ -4,7 +4,7 @@ import { ProsePage, Section } from "@/components/ProsePage";
 export const metadata = {
   title: "Docs — Pyris Pact",
   description:
-    "How Pyris Pact works: programmable B2B payments, smart contract escrow, milestone tracking, and native USDC gas fees on Arc Chain.",
+    "How Pyris Pact works: programmable B2B payments, smart contract escrow, milestone tracking, on Arc and Robinhood Chain.",
 };
 
 const TOC = [
@@ -13,7 +13,7 @@ const TOC = [
   { id: "smart-contract-escrow", heading: "Smart Contract Escrow Architecture" },
   { id: "conditional-release", heading: "Conditional Release upon Approval" },
   { id: "invoice-tracking", heading: "Invoice & Milestone Payment Tracking" },
-  { id: "arc-chain-gas", heading: "Why Arc Chain & Native USDC Gas" },
+  { id: "networks", heading: "Networks: Arc & Robinhood Chain" },
   { id: "refund-protection", heading: "Timeout Refunds & Contractor Guarantees" },
   { id: "using-the-dashboard", heading: "Using the Dashboard" },
 ];
@@ -23,8 +23,8 @@ export default function Page() {
     <ProsePage
       eyebrow="Documentation"
       title="Pyris Pact: Programmable B2B Payments"
-      lede="A platform for businesses that pay freelancers, vendors, or agencies automatically, on conditions both sides agreed to, settled on Arc Chain."
-      meta={["Updated 17 September 2026", "~6 min read"]}
+      lede="A platform for businesses that pay freelancers, vendors, or agencies automatically, on conditions both sides agreed to, settled on Arc or Robinhood Chain."
+      meta={["Updated 20 September 2026", "~7 min read"]}
       toc={TOC}
     >
       <Section id="overview" heading="01 · Overview: Programmable B2B Payments">
@@ -44,7 +44,7 @@ export default function Page() {
           </li>
         </ul>
         <p>
-          Pyris Pact removes both with <strong>smart contract escrow</strong> on Arc Chain: the funds sit safely on
+          Pyris Pact removes both with <strong>smart contract escrow</strong> on Arc or Robinhood Chain: the funds sit safely on
           the blockchain and are only disbursed once the deliverable is approved.
         </p>
       </Section>
@@ -59,7 +59,7 @@ export default function Page() {
           <ol className="list-decimal pl-5 mt-3 space-y-2 text-[13px] text-ink">
             <li>
               <strong>Lock the funds:</strong> the agency creates a Pact in the dashboard and deposits $5,000 USDC
-              into the escrow contract on Arc Chain.
+              into the escrow contract on Arc (or USDG on Robinhood Chain).
             </li>
             <li>
               <strong>Work begins:</strong> the freelancer can verify onchain that the full $5,000 USDC is locked
@@ -99,8 +99,10 @@ function createPact(
 ) external payable returns (uint256 pactId);`}
         </pre>
         <p>
-          When the client calls it, the USDC is pulled from the client&rsquo;s wallet and locked in the contract
-          with status <code>FUNDED (0)</code>.
+          When the client calls it, the funds are locked in the contract with status <code>FUNDED (0)</code>. The
+          contract runs in one of two modes fixed at deployment: <strong>native mode</strong> on Arc, where the amount
+          travels as <code>msg.value</code> in native USDC, and <strong>ERC-20 mode</strong> on Robinhood Chain, where
+          the client first approves USDG and the contract pulls it with <code>transferFrom</code>.
         </p>
       </Section>
 
@@ -126,24 +128,59 @@ function createPact(
         <p>
           Pyris Pact doubles as a permanent onchain payment tracker. Every Pact has an identifier (
           <code>pactId</code>), a creation timestamp, a deadline, the deliverable note, and a verifiable status. Every
-          state change is an event on Arc, so both parties can audit the full history through the block explorer.
+          state change is an event on the pact&rsquo;s chain, so both parties can audit the full history through the block explorer (Arc explorer or Blockscout on Robinhood Chain).
         </p>
       </Section>
 
-      <Section id="arc-chain-gas" heading="Why Arc Chain & Native USDC Gas">
+      <Section id="networks" heading="Networks: Arc & Robinhood Chain">
         <p>
-          Arc Chain (Circle&rsquo;s EVM Layer-1) is the natural home for B2B payments because it uses{" "}
-          <strong>USDC as the native gas currency</strong>.
+          Pyris Pact is dual chain. The same <code>PyrisPact.sol</code> is deployed on two networks, and every pact
+          lives on the one it was created on. Pick the network with the switcher in the header; the dashboard, the
+          public directory and every transaction follow it.
+        </p>
+        <table className="w-full text-[13px] my-4">
+          <thead>
+            <tr className="text-left text-muted border-b border-line">
+              <th className="py-2 pr-4">Network</th>
+              <th className="py-2 pr-4">Escrow asset</th>
+              <th className="py-2 pr-4">Gas</th>
+              <th className="py-2 pr-4">Contract mode</th>
+              <th className="py-2">Explorer</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b border-line">
+              <td className="py-2 pr-4"><strong>Arc</strong> (chain 5042)</td>
+              <td className="py-2 pr-4">Native USDC (18 decimals in the EVM)</td>
+              <td className="py-2 pr-4">USDC, sub-cent</td>
+              <td className="py-2 pr-4">native (<code>msg.value</code>)</td>
+              <td className="py-2">explorer.arc.io</td>
+            </tr>
+            <tr>
+              <td className="py-2 pr-4"><strong>Robinhood Chain</strong> (chain 4663)</td>
+              <td className="py-2 pr-4">USDG, ERC-20 (6 decimals)</td>
+              <td className="py-2 pr-4">ETH, a few cents</td>
+              <td className="py-2 pr-4">ERC-20 (<code>approve</code> + <code>transferFrom</code>)</td>
+              <td className="py-2">robinhoodchain.blockscout.com</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          <strong>Arc</strong> (Circle&rsquo;s EVM Layer-1) uses <strong>USDC as the native gas currency</strong>: the
+          client holds USDC, pays a fraction of a cent in USDC for gas, and the contractor receives clean USDC.
+          Bookkeeping stays in US dollars end to end.
         </p>
         <p>
-          On most blockchains a business must first buy a volatile token such as ETH just to pay for gas. On Arc
-          Chain:
+          <strong>Robinhood Chain</strong> is an Arbitrum Orbit Layer-2 settling to Ethereum. Escrows are held in{" "}
+          <strong>USDG</strong>, a dollar stablecoin with 6 decimals, and gas is paid in ETH; a full pact costs a few
+          cents. Because USDG is an ERC-20 token, funding a pact is two wallet confirmations: an approval, then the
+          deposit. Its public RPC is filtered by some ISPs, so the app talks to it through a same-origin relay
+          (<code>/api/rpc/4663</code>); that changes where the bytes travel, not what you trust.
         </p>
-        <ul>
-          <li>The client holds USDC and pays a fraction of a cent in USDC for gas.</li>
-          <li>The contractor receives clean USDC with no price exposure.</li>
-          <li>Company bookkeeping stays simple: everything is denominated in US dollars.</li>
-        </ul>
+        <p>
+          Pact ids are per network: pact #3 on Arc and pact #3 on Robinhood Chain are unrelated. Links from the app
+          carry the network (<code>?chain=4663</code>) so a shared pact opens on the right one.
+        </p>
       </Section>
 
       <Section id="refund-protection" heading="Timeout Refunds & Contractor Guarantees">
@@ -151,7 +188,7 @@ function createPact(
         <ul>
           <li>
             <strong>Client protection (timeout refund):</strong> if the deadline passes and the contractor has not
-            submitted a deliverable, the client may call <code>refund(pactId)</code> to reclaim 100% of the USDC.
+            submitted a deliverable, the client may call <code>refund(pactId)</code> to reclaim 100% of the escrowed funds.
           </li>
           <li>
             <strong>Voluntary cancellation:</strong> the contractor may trigger a refund at any time to return the

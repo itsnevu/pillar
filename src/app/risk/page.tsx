@@ -4,14 +4,14 @@ import { ProsePage, Section } from "@/components/ProsePage";
 export const metadata = {
   title: "Risk — Pyris Pact",
   description:
-    "The honest limits of programmable milestone escrow: irreversible releases, deadline timeout rules, and smart contract execution parameters on Arc Chain.",
+    "The honest limits of programmable milestone escrow: irreversible releases, deadline timeout rules, and smart contract execution on Arc and Robinhood Chain.",
 };
 
 const TOC = [
   { id: "irreversible-release", heading: "Releases are permanent and irreversible" },
   { id: "deadline-rules", heading: "Deadlines, timeouts, and refunds" },
   { id: "disputes", heading: "Offchain quality and subjective disputes" },
-  { id: "contract-risk", heading: "Smart contract execution on Arc Chain" },
+  { id: "contract-risk", heading: "Smart contract execution on Arc and Robinhood Chain" },
 ];
 
 export default function Page() {
@@ -26,7 +26,7 @@ export default function Page() {
       <Section id="irreversible-release" heading="Releases are permanent and irreversible">
         <p>
           Once a client triggers <code>releaseFunds(pactId)</code>, the transaction immediately transfers
-          the locked USDC into the contractor&apos;s wallet. Blockchain transactions on Arc Chain are final
+          the locked funds into the contractor&apos;s wallet. Blockchain transactions on Arc and Robinhood Chain are final
           and cannot be clawed back, cancelled, or reversed by the Pyris team or any centralized authority.
         </p>
         <p>
@@ -59,10 +59,17 @@ export default function Page() {
         </p>
       </Section>
 
-      <Section id="contract-risk" heading="Smart contract execution on Arc Chain">
+      <Section id="contract-risk" heading="Smart contract execution on Arc and Robinhood Chain">
         <p>
           Pyris Pact executes on <code>PyrisPact.sol</code>. While the contract has been stripped of complex
           oracle and DEX dependencies for maximal security, software bugs or network-level delays can occur.
+        </p>
+        <p>
+          Two networks, two deployments. A pact exists only on the chain it was created on; funds sent to the
+          contract on the other chain are not the same pact. On Robinhood Chain the escrow asset is USDG, an ERC-20
+          token, which adds a token-transfer dependency (and a token issuer) that the native-USDC deployment on Arc
+          does not have. Robinhood Chain is also reached through a same-origin RPC relay where the public endpoint
+          is filtered; a relay outage delays reads, it cannot alter what the chain recorded.
         </p>
         <p>
           The protocol is in open beta. Start with small amounts. See also the{" "}

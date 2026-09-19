@@ -13,9 +13,9 @@ const display = Libre_Caslon_Text({
   display: "swap",
 });
 
-const TITLE = "Pyris Pact | Programmable B2B Payments on Arc Chain";
+const TITLE = "Pyris Pact | Programmable B2B Payments on Arc & Robinhood Chain";
 const DESCRIPTION =
-  "Lock USDC in trustless milestone escrow. Disburse upon approved deliverables. Native USDC gas fees, zero wire markups, and instant settlement on Arc Chain.";
+  "Lock stablecoins in trustless milestone escrow. Disburse upon approved deliverables. Zero wire markups and instant settlement on Arc and Robinhood Chain.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -28,6 +28,7 @@ export const metadata: Metadata = {
     "milestone payments",
     "USDC",
     "Arc Chain",
+    "Robinhood Chain",
     "freelancer payments",
     "contractor escrow",
   ],

@@ -12,3 +12,6 @@ contracts/broadcast
 
 # Foundry run from the repo root writes here; the real one is contracts/cache.
 cache/
+
+# internal content brief, never published
+design/PROJECT-BRIEF.md

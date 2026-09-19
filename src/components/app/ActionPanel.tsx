@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { USDC_DECIMALS } from "@/lib/contracts";
 import { parseUnits, isAddress, type Address } from "viem";
 import { useAccount } from "wagmi";
 import { usePactMutations } from "@/lib/hooks";
+import { useNetwork } from "@/lib/network";
 
 export function ActionPanel({ onDone }: { onDone?: () => void }) {
   const { isConnected } = useAccount();
-  const { createPact, isPending } = usePactMutations();
+  const net = useNetwork();
+  const { createPact, isPending, step } = usePactMutations();
   const [vendor, setVendor] = useState("");
   const [amount, setAmount] = useState("");
   const [title, setTitle] = useState("");
@@ -24,13 +25,13 @@ export function ActionPanel({ onDone }: { onDone?: () => void }) {
     }
     const amt = parseFloat(amount);
     if (isNaN(amt) || amt <= 0) {
-      alert("Invalid USDC amount");
+      alert(`Invalid ${net.symbol} amount`);
       return;
     }
 
     try {
-      setStatus("Submitting to Arc Chain...");
-      await createPact(vendor as Address, parseUnits(amount, USDC_DECIMALS), days * 86400, title, description);
+      setStatus(`Submitting to ${net.name}...`);
+      await createPact(vendor as Address, parseUnits(amount, net.decimals), days * 86400, title, description);
       setStatus("Pact created successfully!");
       setVendor("");
       setAmount("");
@@ -47,7 +48,7 @@ export function ActionPanel({ onDone }: { onDone?: () => void }) {
     <div className="rounded-[12px] border border-line bg-surface p-5">
       <h3 className="font-serif text-[18px] text-ink mb-2">New Milestone Escrow</h3>
       <p className="text-[12.5px] text-muted mb-4">
-        Lock USDC in trustless escrow on Arc Chain. Disbursed only upon approved deliverable.
+        Lock {net.symbol} in trustless escrow on {net.name}. Disbursed only upon approved deliverable.
       </p>
 
       {status && (
@@ -88,7 +89,7 @@ export function ActionPanel({ onDone }: { onDone?: () => void }) {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-[11px] uppercase font-semibold text-muted mb-1">
-              Amount (USDC)
+              Amount ({net.symbol})
             </label>
             <input
               type="number"
@@ -135,8 +136,14 @@ export function ActionPanel({ onDone }: { onDone?: () => void }) {
           disabled={!isConnected || isPending}
           className="w-full h-11 rounded-pill bg-ink text-surface font-semibold text-[13px] hover:bg-black transition-colors disabled:opacity-50 mt-2"
         >
-          {isPending ? "Locking USDC..." : "Lock USDC into Escrow"}
+          {step === "approving" ? `Approving ${net.symbol}...` : isPending ? `Locking ${net.symbol}...` : `Lock ${net.symbol} into Escrow`}
         </button>
+        {net.mode === "erc20" && (
+          <p className="text-[11.5px] text-muted">
+            On {net.name} the escrow is an ERC-20 token, so the first pact asks for an approval before the deposit.
+            Gas is paid in {net.gasSymbol}.
+          </p>
+        )}
       </form>
     </div>
   );

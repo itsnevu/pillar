@@ -4,7 +4,7 @@ import { ProsePage, Section, Note } from "@/components/ProsePage";
 export const metadata = {
   title: "Whitepaper — Pyris Pact",
   description:
-    "Pyris Pact Whitepaper: Programmable B2B Payments & Milestone Escrow on Arc Chain. Contract specification, state machine transitions, dispute resolution, and native USDC gas dynamics.",
+    "Pyris Pact Whitepaper: Programmable B2B Payments & Milestone Escrow on Arc and Robinhood Chain. Contract specification, deployment modes, state machine transitions, and dispute resolution.",
 };
 
 const TOC = [
@@ -13,7 +13,7 @@ const TOC = [
   { id: "core-pillars", heading: "Core Pillars: Programmable B2B Payments" },
   { id: "architecture", heading: "Smart Contract Architecture (PyrisPact.sol)" },
   { id: "state-machine", heading: "State Machine & Conditional Disbursal" },
-  { id: "arc-chain-gas", heading: "Arc Chain: Native USDC Gas Advantage" },
+  { id: "networks", heading: "Networks & Deployment Modes: Arc and Robinhood Chain" },
   { id: "invoice-tracking", heading: "Onchain Invoicing & Milestone Tracking" },
   { id: "case-study", heading: "Reference Case: Agency & Freelancer Settlement" },
   { id: "security-refund", heading: "Timeout Refunds & Non-Custodial Invariants" },
@@ -26,11 +26,11 @@ export default function Page() {
     <ProsePage
       eyebrow="Whitepaper · v2.0"
       title="Programmable B2B Payments & Smart Contract Escrow"
-      lede="A non-custodial protocol for businesses that pay freelancers, vendors, or agencies automatically, on conditions both sides agreed to, settled on Arc Chain."
-      meta={["Version 2.0", "17 September 2026", "~10 min read"]}
+      lede="A non-custodial protocol for businesses that pay freelancers, vendors, or agencies automatically, on conditions both sides agreed to, settled on Arc or Robinhood Chain."
+      meta={["Version 2.1", "20 September 2026", "~11 min read"]}
       toc={TOC}
       numbered
-      footNote="Technical specification of PyrisPact.sol as deployed on Arc Mainnet."
+      footNote="Technical specification of PyrisPact.sol as deployed on Arc Mainnet (native mode) and Robinhood Chain (ERC-20 mode)."
     >
       <Section id="abstract" heading="Abstract">
         <p>
@@ -39,9 +39,10 @@ export default function Page() {
           work begins, and release it the moment deliverables are approved.
         </p>
         <p>
-          By building on <strong>Arc Chain</strong>, Circle&rsquo;s EVM Layer-1 where gas is paid in native USDC,
-          Pyris Pact removes the friction of volatile gas tokens, the latency of bank wires, and the 10–20% commission
-          taken by centralised freelance marketplaces.
+          Pyris Pact is dual chain. On <strong>Arc</strong>, Circle&rsquo;s EVM Layer-1 where gas is paid in native
+          USDC, it removes the friction of volatile gas tokens entirely. On <strong>Robinhood Chain</strong>, an
+          Ethereum Layer-2, the same contract escrows USDG with gas of a few cents. On both it removes the latency of
+          bank wires and the 10–20% commission taken by centralised freelance marketplaces.
         </p>
       </Section>
 
@@ -83,8 +84,8 @@ export default function Page() {
             recorded permanently on the blockchain.
           </li>
           <li>
-            <strong>B2B-native USDC settlement:</strong> transaction value and gas are both settled purely in USDC on
-            Arc Chain.
+            <strong>Stablecoin-native settlement:</strong> escrow value is always a dollar stablecoin (USDC on Arc,
+            USDG on Robinhood Chain); on Arc even gas is settled in USDC.
           </li>
         </ol>
       </Section>
@@ -146,34 +147,70 @@ struct Pact {
         </p>
       </Section>
 
-      <Section id="arc-chain-gas" heading="Arc Chain: Native USDC Gas Advantage">
+      <Section id="networks" heading="Networks & Deployment Modes: Arc and Robinhood Chain">
         <p>
-          The biggest weakness of smart contract payments on conventional EVM networks such as Ethereum or Polygon
-          is gas token fragmentation. Corporate clients do not want a speculative token like ETH on their balance
-          sheet just to pay transaction fees.
+          <code>PyrisPact.sol</code> is written once and deployed per network. The constructor takes one argument,{" "}
+          <code>_usdcToken</code>, which fixes the escrow mode for that deployment:
+        </p>
+        <pre className="p-4 bg-soft rounded-[8px] text-[12px] font-mono overflow-x-auto">
+{`constructor(address _usdcToken)           // address(0) = native mode, else ERC-20 mode
+
+// createPact, native mode (Arc):     amount == msg.value, 18 decimals
+// createPact, ERC-20 mode (Robinhood): msg.value == 0; usdcToken.transferFrom(client, this, amount)
+// payouts:  native -> call{value}; ERC-20 -> usdcToken.transfer; failures land in pendingWithdrawals`}
+        </pre>
+        <table className="w-full text-[13px] my-4">
+          <thead>
+            <tr className="text-left text-muted border-b border-line">
+              <th className="py-2 pr-4">Network</th>
+              <th className="py-2 pr-4">Mode</th>
+              <th className="py-2 pr-4">Escrow asset</th>
+              <th className="py-2 pr-4">Gas</th>
+              <th className="py-2">Contract</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b border-line">
+              <td className="py-2 pr-4"><strong>Arc Mainnet</strong> · 5042</td>
+              <td className="py-2 pr-4">native</td>
+              <td className="py-2 pr-4">USDC, 18 decimals</td>
+              <td className="py-2 pr-4">USDC, ~$0.001</td>
+              <td className="py-2 font-mono text-[11.5px]">0xb5f905f48321F44e379d8680e947dDd05830AF62</td>
+            </tr>
+            <tr>
+              <td className="py-2 pr-4"><strong>Robinhood Chain</strong> · 4663</td>
+              <td className="py-2 pr-4">ERC-20</td>
+              <td className="py-2 pr-4">USDG, 6 decimals</td>
+              <td className="py-2 pr-4">ETH, a few cents</td>
+              <td className="py-2 font-mono text-[11.5px]">see /app (Smart Contract Verification)</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          <strong>Arc</strong> solves gas token fragmentation at the protocol level: corporate clients keep a single
+          asset on the balance sheet. The client locks $1,000 USDC, pays about $0.001 USDC in gas, and the vendor
+          receives $1,000 USDC, with sub-second finality.
         </p>
         <p>
-          <strong>Arc Chain</strong> solves this at the protocol level:
+          <strong>Robinhood Chain</strong> is an Arbitrum Orbit Layer-2 settling to Ethereum (ArbOS 61 at the time of
+          writing). Gas is ETH but cheap enough that a whole pact costs cents; the escrow asset is USDG, so the
+          amount a vendor receives is still a dollar figure. ERC-20 mode adds one step for the client, an{" "}
+          <code>approve</code> before the deposit, and nothing for the vendor. Because the public RPC is
+          content-filtered by some ISPs, the frontend reaches Robinhood Chain through a same-origin relay that forwards
+          an allow-list of JSON-RPC methods; the trust model is unchanged, since every state the app shows is read from
+          the chain&rsquo;s own logs.
         </p>
-        <ul>
-          <li>
-            <strong>Native gas in USDC:</strong> transactions are executed with fees denominated directly in USDC.
-          </li>
-          <li>
-            <strong>Single-asset accounting:</strong> the client locks $1,000 USDC, pays about $0.001 USDC in gas,
-            and the vendor receives $1,000 USDC.
-          </li>
-          <li>
-            <strong>Sub-second finality:</strong> instant block confirmation means a payout completes in seconds.
-          </li>
-        </ul>
+        <p>
+          Deployments are independent: pact ids, events and pending withdrawals never cross networks. The frontend
+          keeps one selected network at a time and addresses every read and write to it explicitly.
+        </p>
       </Section>
 
       <Section id="invoice-tracking" heading="Onchain Invoicing & Milestone Tracking">
         <p>
           Every pact is an immutable onchain invoice. Completion status, submission timestamps, deliverable proof
           links (GitHub PR, Figma, IPFS), and the client&rsquo;s approval are recorded as a permanent audit trail,
-          each transition backed by a transaction on Arc, ready for B2B bookkeeping and tax reporting.
+          each transition backed by a transaction on the pact&rsquo;s chain, ready for B2B bookkeeping and tax reporting.
         </p>
       </Section>
 
@@ -244,8 +281,8 @@ struct Pact {
       <Section id="conclusion" heading="Conclusion & Protocol Status">
         <p>
           Pyris Pact modernises real-world B2B payment infrastructure with programmable escrow, instant conditional
-          payments, and USDC-denominated invoice tracking on Arc Chain. The contract is deployed on Arc Mainnet
-          and its source is publicly verified.
+          payments, and stablecoin-denominated invoice tracking on Arc and Robinhood Chain. The contract is deployed
+          on Arc Mainnet (source verified on Sourcify) and on Robinhood Chain (ERC-20 mode against USDG).
         </p>
         <p>
           Open the production <Link href="/app">Pact Dashboard</Link> or read the{" "}

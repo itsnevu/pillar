@@ -6,22 +6,20 @@ import { isAddress, parseUnits, zeroAddress, type Address } from "viem";
 import { AppShell, Stat } from "@/components/app/AppShell";
 import { AddressLink, ProofLink } from "@/components/app/Explorer";
 import { usePacts, usePactMutations, useMounted } from "@/lib/hooks";
+import { useNetwork } from "@/lib/network";
 import {
-  fmtUsdc,
   truncateAddress,
   fmtDate,
   pactStatusMeta,
   PactStatus,
   isActive,
-  type Pact,
-  USDC_DECIMALS,
 } from "@/lib/contracts";
 
 /** Wallet rejections and reverts both land here; the UI never claims success on failure. */
 function errorText(e: unknown, fallback: string): string {
   const msg = e instanceof Error ? e.message : String(e);
   if (/user rejected|denied/i.test(msg)) return "Transaction cancelled in wallet.";
-  if (/not confirmed on Arc|Transaction reverted/.test(msg)) return msg;
+  if (/not confirmed on|Transaction reverted/.test(msg)) return msg;
   const m = msg.match(/reverted with the following reason:\s*([^\n]+)|Error: (\w+)\(/);
   return m ? `${fallback}: ${m[1] ?? m[2]}` : fallback;
 }
@@ -36,6 +34,8 @@ export default function DashboardPage() {
 
 function PactDashboard() {
   const { address: connected } = useAccount();
+  const net = useNetwork();
+  const sym = net.symbol;
   const mounted = useMounted();
   const [activeTab, setActiveTab] = useState<"all" | "outgoing" | "incoming">("all");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -62,7 +62,7 @@ function PactDashboard() {
   const [deadlineDays, setDeadlineDays] = useState(7);
 
   const { pacts, outgoingPacts, incomingPacts, stats, refetch } = usePacts(connected);
-  const { createPact, submitWork, releaseFunds, refund, isPending } = usePactMutations();
+  const { createPact, submitWork, releaseFunds, refund, isPending, step } = usePactMutations();
 
   const displayedPacts =
     activeTab === "outgoing" ? outgoingPacts : activeTab === "incoming" ? incomingPacts : pacts;
@@ -70,12 +70,12 @@ function PactDashboard() {
   const handleCreatePact = async (e: any) => {
     e.preventDefault();
     if (!isAddress(vendorAddress)) {
-      alert("Please enter a valid Ethereum / Arc Chain address for the contractor.");
+      alert(`Please enter a valid ${net.name} address for the contractor.`);
       return;
     }
     const parsedAmount = parseFloat(amountUsdc);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      alert("Please enter a valid USDC amount.");
+      alert(`Please enter a valid ${sym} amount.`);
       return;
     }
     const arbiter = arbiterAddress.trim();
@@ -89,7 +89,7 @@ function PactDashboard() {
     }
 
     try {
-      const amountBigInt = parseUnits(amountUsdc, USDC_DECIMALS);
+      const amountBigInt = parseUnits(amountUsdc, net.decimals);
       const deadlineSeconds = deadlineDays * 86400;
       await createPact(
         vendorAddress as Address,
@@ -99,7 +99,7 @@ function PactDashboard() {
         description,
         (arbiter || zeroAddress) as Address
       );
-      ok(`Pact "${title}" created and ${amountUsdc} USDC locked into escrow.`);
+      ok(`Pact "${title}" created and ${amountUsdc} ${sym} locked into escrow on ${net.name}.`);
       setIsCreateOpen(false);
       setVendorAddress("");
       setArbiterAddress("");
@@ -158,7 +158,7 @@ function PactDashboard() {
           <div>
             <h1 className="font-serif text-[40px] leading-[1.05] text-ink">Pact Dashboard</h1>
             <p className="mt-3 max-w-[640px] text-[14px] leading-[1.65] text-muted">
-              Programmable milestone escrows on Arc Chain. Lock USDC before work begins, verify deliverables onchain,
+              Programmable milestone escrows on {net.name}. Lock {sym} before work begins, verify deliverables onchain,
               and disburse instant payouts with zero banking fees.
             </p>
           </div>
@@ -170,13 +170,20 @@ function PactDashboard() {
             )}
             <button
               onClick={() => setIsCreateOpen(true)}
-              className="inline-flex items-center justify-center rounded-pill bg-ink text-surface text-[13px] font-semibold px-5 h-10 hover:bg-black transition-all shadow-sm"
+              disabled={!net.pyrisPact}
+              className="inline-flex items-center justify-center rounded-pill bg-ink text-surface text-[13px] font-semibold px-5 h-10 hover:bg-black transition-all shadow-sm disabled:opacity-50"
             >
               + Create New Pact
             </button>
           </div>
         </div>
       </section>
+
+      {!net.pyrisPact && (
+        <div role="status" className="mt-6 p-4 rounded-[8px] border bg-amber-50 border-amber-200 text-amber-900 text-[13.5px]">
+          PyrisPact is not deployed on {net.name} yet. Switch network to create or view pacts.
+        </div>
+      )}
 
       {/* Feedback Banner */}
       {feedback && (
@@ -197,24 +204,28 @@ function PactDashboard() {
       <section className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <Stat
           label="Total Escrow Volume"
-          value={`$${fmtUsdc(stats.totalEscrowVolume)}`}
-          sub="Cumulative USDC processed"
+          value={`$${net.fmt(stats.totalEscrowVolume)}`}
+          sub={`Cumulative ${sym} processed on ${net.short}`}
         />
         <Stat
           label="Active in Escrow"
-          value={`$${fmtUsdc(stats.activeEscrowAmount)}`}
+          value={`$${net.fmt(stats.activeEscrowAmount)}`}
           sub={`${stats.activeCount} milestone${stats.activeCount === 1 ? "" : "s"} in progress`}
           accent
         />
         <Stat
           label="Settled Payouts"
-          value={`$${fmtUsdc(stats.completedPayouts)}`}
+          value={`$${net.fmt(stats.completedPayouts)}`}
           sub={`${stats.completedCount} milestone${stats.completedCount === 1 ? "" : "s"} completed`}
         />
         <Stat
-          label="Network Gas Currency"
-          value="USDC"
-          sub="Native gas on Arc Chain (no ETH needed)"
+          label="Network"
+          value={net.short}
+          sub={
+            net.mode === "native"
+              ? `Escrow and gas both in ${sym} (no ETH needed)`
+              : `Escrow in ${sym} · gas in ${net.gasSymbol}`
+          }
         />
       </section>
 
@@ -248,7 +259,7 @@ function PactDashboard() {
             </button>
           </div>
 
-          <span className="text-[12px] text-muted">Showing {displayedPacts.length} pacts</span>
+          <span className="text-[12px] text-muted">Showing {displayedPacts.length} pacts on {net.name}</span>
         </div>
 
         {/* Pacts Table */}
@@ -256,7 +267,7 @@ function PactDashboard() {
           {displayedPacts.length === 0 ? (
             <div className="py-16 text-center text-muted text-[14px]">
               No pacts found in this view.{" "}
-              <button onClick={() => setIsCreateOpen(true)} className="text-ink font-semibold underline">
+              <button onClick={() => setIsCreateOpen(true)} disabled={!net.pyrisPact} className="text-ink font-semibold underline disabled:opacity-50">
                 Create your first escrow pact
               </button>
             </div>
@@ -264,14 +275,14 @@ function PactDashboard() {
             <div className="divide-y divide-line">
               {displayedPacts.map((p) => {
                 const meta = pactStatusMeta(p.status);
-                const isClient = connected && p.client.toLowerCase() === connected.toLowerCase();
-                const isVendor = connected && p.vendor.toLowerCase() === connected.toLowerCase();
 
                 return (
                   <div key={p.id.toString()} className="py-6 flex flex-col md:flex-row justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
-                        <h3 className="font-semibold text-[17px] text-ink">{p.title}</h3>
+                        <h3 className="font-semibold text-[17px] text-ink">
+                          <a href={net.link(`/app/${p.id.toString()}`)} className="hover:underline">{p.title}</a>
+                        </h3>
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-pill text-[11.5px] font-semibold ${
                             p.status === PactStatus.RELEASED || p.status === PactStatus.RESOLVED
@@ -317,7 +328,7 @@ function PactDashboard() {
                     <div className="flex flex-col items-start md:items-end justify-between gap-3 min-w-[200px]">
                       <div>
                         <div className="text-[20px] font-bold text-ink">
-                          ${fmtUsdc(p.amount)} <small className="text-[13px] font-normal text-muted">USDC</small>
+                          ${net.fmt(p.amount)} <small className="text-[13px] font-normal text-muted">{sym}</small>
                         </div>
                         <div className="text-[11.5px] text-muted">{meta.desc}</div>
                       </div>
@@ -364,7 +375,7 @@ function PactDashboard() {
 
                         {p.status === PactStatus.DISPUTED && (
                           <a
-                            href={`/app/${p.id.toString()}`}
+                            href={net.link(`/app/${p.id.toString()}`)}
                             className="px-3.5 py-1.5 rounded-pill border border-red-200 text-red-700 text-[12px] font-medium hover:bg-red-50 transition-colors"
                           >
                             Settle Dispute
@@ -385,7 +396,12 @@ function PactDashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="w-full max-w-[540px] rounded-[16px] bg-surface p-6 sm:p-8 shadow-2xl border border-line">
             <div className="flex justify-between items-center pb-4 border-b border-line">
-              <h2 className="font-serif text-[22px] text-ink">Create Escrow Pact</h2>
+              <div>
+                <h2 className="font-serif text-[22px] text-ink">Create Escrow Pact</h2>
+                <p className="text-[12px] text-muted mt-0.5">
+                  On {net.name} · escrow in {sym}, gas in {net.gasSymbol}
+                </p>
+              </div>
               <button
                 onClick={() => setIsCreateOpen(false)}
                 className="text-muted hover:text-ink text-[18px] font-bold"
@@ -397,7 +413,7 @@ function PactDashboard() {
             <form onSubmit={handleCreatePact} className="mt-5 space-y-4">
               <div>
                 <label className="block text-[12px] font-semibold uppercase tracking-wider text-muted mb-1">
-                  Contractor Wallet Address (Arc Chain)
+                  Contractor Wallet Address ({net.name})
                 </label>
                 <input
                   type="text"
@@ -456,7 +472,7 @@ function PactDashboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[12px] font-semibold uppercase tracking-wider text-muted mb-1">
-                    Escrow Amount (USDC)
+                    Escrow Amount ({sym})
                   </label>
                   <input
                     type="number"
@@ -486,6 +502,12 @@ function PactDashboard() {
                 </div>
               </div>
 
+              {net.mode === "erc20" && (
+                <p className="text-[12px] text-muted">
+                  {sym} on {net.name} is an ERC-20 token: your wallet will ask for an approval first, then the deposit.
+                </p>
+              )}
+
               <div className="pt-4 flex justify-end gap-3 border-t border-line">
                 <button
                   type="button"
@@ -499,7 +521,7 @@ function PactDashboard() {
                   disabled={isPending}
                   className="px-6 h-11 rounded-pill bg-ink text-surface text-[13.5px] font-semibold hover:bg-black transition-colors"
                 >
-                  {isPending ? "Locking USDC…" : "Lock USDC & Create Escrow"}
+                  {step === "approving" ? `Approving ${sym}…` : isPending ? `Locking ${sym}…` : `Lock ${sym} & Create Escrow`}
                 </button>
               </div>
             </form>

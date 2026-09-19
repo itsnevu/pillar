@@ -2,13 +2,16 @@
 
 import Link from "next/link";
 import { usePacts, useMounted } from "@/lib/hooks";
-import { fmtUsdc, fmtDate, pactStatusMeta, addresses } from "@/lib/contracts";
+import { fmtDate, pactStatusMeta } from "@/lib/contracts";
+import { useNetwork } from "@/lib/network";
 import { AddressLink, ProofLink } from "@/components/app/Explorer";
 
 export function Markets() {
+  const net = useNetwork();
   const { pacts, stats, isLoading, isError } = usePacts();
   const mounted = useMounted();
   const settling = !mounted || isLoading;
+  const sym = net.symbol;
 
   return (
     <div id="pacts" style={{ marginTop: "24px" }}>
@@ -17,15 +20,16 @@ export function Markets() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "12px" }}>
           <h2>Live Escrow Milestones</h2>
           <span style={{ fontSize: "14px", color: "var(--rusd-muted, #78716c)" }}>
-            Currently in escrow: <strong>${fmtUsdc(stats.activeEscrowAmount)} USDC</strong> · Settled:{" "}
-            <strong>${fmtUsdc(stats.completedPayouts)} USDC</strong>
+            Currently in escrow: <strong>${net.fmt(stats.activeEscrowAmount)} {sym}</strong> · Settled:{" "}
+            <strong>${net.fmt(stats.completedPayouts)} {sym}</strong>
           </span>
         </div>
 
         <table className="rusd-market-table">
           <caption className="borrow-table-caption">
-            {settling ? "Reading pacts from Arc" : `${stats.totalCount} registered pact${stats.totalCount === 1 ? "" : "s"}`}
-            {" · "}read live from contract <AddressLink address={addresses.pyrisPact} /> on Arc
+            {settling ? `Reading pacts from ${net.name}` : `${stats.totalCount} registered pact${stats.totalCount === 1 ? "" : "s"}`}
+            {" · "}read live from contract{" "}
+            {net.pyrisPact ? <AddressLink address={net.pyrisPact} /> : <span className="font-mono">not deployed</span>} on {net.name}
           </caption>
           <thead>
             <tr>
@@ -40,10 +44,10 @@ export function Markets() {
               <tr>
                 <td colSpan={4} style={{ textAlign: "center", padding: "32px 16px", color: "var(--rusd-muted, #78716c)" }}>
                   {settling
-                    ? "Reading pacts from Arc…"
+                    ? `Reading pacts from ${net.name}…`
                     : isError
-                      ? "Could not reach the Arc RPC. Refresh to try again."
-                      : "No pacts have been created onchain yet. Open the app to fund the first one."}
+                      ? `Could not reach the ${net.name} RPC. Refresh to try again.`
+                      : `No pacts have been created on ${net.name} yet. Open the app to fund the first one.`}
                 </td>
               </tr>
             )}
@@ -73,13 +77,13 @@ export function Markets() {
                     <div className="borrow-directory-value">
                       <span>Onchain proof</span>
                       <span>
-                        <Link href={`/app/${p.id.toString()}`}>view every transaction →</Link>
+                        <Link href={net.link(`/app/${p.id.toString()}`)}>view every transaction →</Link>
                       </span>
                     </div>
                   </td>
                   <td>
                     <div style={{ fontSize: "16px", fontWeight: 600 }}>
-                      ${fmtUsdc(p.amount)} <small style={{ fontWeight: 400, color: "#78716c" }}>USDC</small>
+                      ${net.fmt(p.amount)} <small style={{ fontWeight: 400, color: "#78716c" }}>{sym}</small>
                     </div>
                   </td>
                   <td>
@@ -120,7 +124,7 @@ export function Markets() {
                   <td>
                     <Link
                       className="rusd-action rusd-action-secondary"
-                      href="/app"
+                      href={net.link("/app")}
                       aria-label={`View ${p.title} in dashboard`}
                     >
                       View in App
@@ -187,12 +191,12 @@ export function Markets() {
             }}
           >
             <h3 style={{ fontSize: "15px", fontWeight: 700, marginBottom: "8px", color: "#1c1917" }}>
-              Pyris Pact on Arc Chain ✨
+              Pyris Pact on Arc & Robinhood Chain ✨
             </h3>
             <ul style={{ fontSize: "13px", color: "#292524", lineHeight: 1.6, paddingLeft: "18px", margin: 0 }}>
               <li><strong>0% platform fee</strong> during open beta.</li>
-              <li>Sub-cent gas fees paid natively in <strong>USDC</strong>.</li>
-              <li>Sub-second settlement with onchain cryptographic guarantees.</li>
+              <li>Sub-cent gas: native <strong>USDC</strong> on Arc, a few cents of ETH on Robinhood Chain.</li>
+              <li>Settlement in seconds with onchain cryptographic guarantees.</li>
             </ul>
           </div>
         </div>

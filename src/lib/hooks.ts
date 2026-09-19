@@ -6,20 +6,17 @@ import {
   useReadContract,
   useWriteContract,
   useWaitForTransactionReceipt,
-  usePublicClient,
   useSwitchChain,
 } from "wagmi";
 import { zeroAddress, type Address } from "viem";
-import { PyrisPactAbi, addresses, DEPLOY_BLOCK, type Pact, PactStatus } from "./contracts";
-import { pyrisChain } from "./chain";
+import { PyrisPactAbi, Erc20Abi, type Pact, PactStatus } from "./contracts";
+import { useNetwork } from "./network";
 
 const noop = () => () => {};
 /** true after hydration, false during SSR */
 export function useMounted() {
   return useSyncExternalStore(noop, () => true, () => false);
 }
-
-const pactAddress = addresses.pyrisPact as Address;
 
 // ------------------------------------------------------------ onchain history
 
@@ -33,7 +30,7 @@ export type PactEventKind =
   | "ResolutionProposed"
   | "PactResolved";
 
-/** One state transition of a pact, as proven by an event log on Arc. */
+/** One state transition of a pact, as proven by an event log on the pact's chain. */
 export type PactEvent = {
   kind: PactEventKind;
   txHash: `0x${string}`;
@@ -78,12 +75,14 @@ function describe(kind: PactEventKind, a: Record<string, unknown>): { actor?: Ad
 }
 
 /**
- * Every event the contract emitted for one pact, oldest first, each with the
- * transaction hash that proves it. Read straight from Arc logs; nothing is
- * stored off-chain.
+ * Every event the contract emitted for one pact on the selected network, oldest first,
+ * each with the transaction hash that proves it. Read straight from chain logs; nothing
+ * is stored off-chain.
  */
 export function usePactHistory(pactId: bigint | undefined) {
-  const client = usePublicClient();
+  const net = useNetwork();
+  const client = net.client;
+  const pactAddress = net.pyrisPact;
   const [events, setEvents] = useState<PactEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -94,6 +93,7 @@ export function usePactHistory(pactId: bigint | undefined) {
     let cancelled = false;
     setIsLoading(true);
     setIsError(false);
+    setEvents([]);
 
     (async () => {
       try {
@@ -104,7 +104,7 @@ export function usePactHistory(pactId: bigint | undefined) {
               abi: PyrisPactAbi,
               eventName,
               args: { pactId },
-              fromBlock: DEPLOY_BLOCK,
+              fromBlock: net.deployBlock,
               toBlock: "latest",
             })
           )
@@ -142,20 +142,23 @@ export function usePactHistory(pactId: bigint | undefined) {
     return () => {
       cancelled = true;
     };
-  }, [client, pactId, tick]);
+  }, [client, pactId, tick, pactAddress, net.deployBlock, net.id]);
 
   return { events, isLoading, isError, refetch: () => setTick((t) => t + 1) };
 }
 
 /**
- * Hook to retrieve all pacts, filtered by client/vendor role
+ * All pacts on the selected network, filtered by client/vendor role.
  */
 export function usePacts(userAddress?: Address) {
+  const net = useNetwork();
+  const pactAddress = net.pyrisPact;
   const { data: rawPacts, refetch, isLoading, isError } = useReadContract({
     address: pactAddress,
     abi: PyrisPactAbi,
     functionName: "getPacts",
     args: [0n, 50n],
+    chainId: net.id,
     query: {
       enabled: !!pactAddress,
     },
@@ -220,11 +223,14 @@ export function usePacts(userAddress?: Address) {
 
 /** The open split proposal on a disputed pact, if any. */
 export function useProposal(pactId: bigint | undefined) {
+  const net = useNetwork();
+  const pactAddress = net.pyrisPact;
   const { data, refetch } = useReadContract({
     address: pactAddress,
     abi: PyrisPactAbi,
     functionName: "proposals",
     args: [pactId ?? 0n],
+    chainId: net.id,
     query: { enabled: !!pactAddress && pactId !== undefined },
   });
   const [proposer, vendorShareBps] = (data ?? [zeroAddress, 0]) as readonly [Address, number];
@@ -233,52 +239,90 @@ export function useProposal(pactId: bigint | undefined) {
 
 /** Payout owed to the connected wallet after a push transfer failed. */
 export function usePendingWithdrawal(account: Address | undefined) {
+  const net = useNetwork();
+  const pactAddress = net.pyrisPact;
   const { data, refetch } = useReadContract({
     address: pactAddress,
     abi: PyrisPactAbi,
     functionName: "pendingWithdrawals",
     args: [account ?? zeroAddress],
+    chainId: net.id,
     query: { enabled: !!pactAddress && !!account },
   });
   return { amount: (data as bigint | undefined) ?? 0n, refetch };
 }
 
 /**
- * Hook for executing Pact escrow actions
+ * The connected wallet's balance of the escrow token on the selected network: native
+ * balance on Arc, ERC-20 balance on Robinhood Chain. Undefined until loaded.
+ */
+export function useEscrowBalance(account: Address | undefined) {
+  const net = useNetwork();
+  const client = net.client;
+  const [balance, setBalance] = useState<bigint | undefined>(undefined);
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (!client || !account) { setBalance(undefined); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const v =
+          net.mode === "native" || !net.token.address
+            ? await client.getBalance({ address: account })
+            : ((await client.readContract({ address: net.token.address, abi: Erc20Abi, functionName: "balanceOf", args: [account] })) as bigint);
+        if (!cancelled) setBalance(v);
+      } catch {
+        if (!cancelled) setBalance(undefined);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [client, account, net.id, net.mode, net.token.address, tick]);
+  return { balance, refetch: () => setTick((t) => t + 1) };
+}
+
+/**
+ * Hook for executing Pact escrow actions on the selected network.
  */
 export function usePactMutations() {
+  const net = useNetwork();
+  const pactAddress = net.pyrisPact as Address;
   const { writeContractAsync: rawWrite, data: hash, isPending } = useWriteContract();
-  const { isLoading: isWaiting, isSuccess } = useWaitForTransactionReceipt({ hash });
-  const { chainId } = useAccount();
+  const { isLoading: isWaiting, isSuccess } = useWaitForTransactionReceipt({ hash, chainId: net.id });
+  const { chainId, address: account } = useAccount();
   const { switchChainAsync } = useSwitchChain();
-  const publicClient = usePublicClient();
+  const publicClient = net.client;
+  const [step, setStep] = useState<"idle" | "approving" | "sending">("idle");
 
   /**
-   * Every write goes through here so the wallet is on Arc first. A second
-   * injected wallet (Rabby, Phantom) often sits on Ethereum mainnet; without
-   * this the transaction would be sent there and fail for lack of ETH.
+   * Every write goes through here so the wallet is on the selected network first. A
+   * second injected wallet (Rabby, Phantom) often sits on Ethereum mainnet; without this
+   * the transaction would be sent there and fail for lack of gas.
    */
   const writeContractAsync = async (opts: Record<string, unknown>) => {
-    if (chainId !== pyrisChain.id) {
-      await switchChainAsync({ chainId: pyrisChain.id });
+    if (chainId !== net.id) {
+      await switchChainAsync({ chainId: net.id });
     }
-    const txHash = await rawWrite({ ...opts, chainId: pyrisChain.id });
-    // The wallet resolves as soon as the tx is signed and sent. Callers refetch
-    // state right after, so wait until Arc has actually mined it. Arc finalises
-    // in about a second; anything past 90s means the tx never reached Arc.
+    const txHash = await rawWrite({ ...opts, chainId: net.id });
+    // The wallet resolves as soon as the tx is signed and sent. Callers refetch state
+    // right after, so wait until the chain has actually mined it. Both networks finalise
+    // in seconds; anything past 90s means the tx never reached the chain.
     let receipt;
     try {
       receipt = await publicClient.waitForTransactionReceipt({ hash: txHash, timeout: 90_000 });
     } catch {
       throw new Error(
-        `Transaction ${txHash} was not confirmed on Arc within 90s. Check that your wallet sent it on Arc (chain 5042), not another network.`
+        `Transaction ${txHash} was not confirmed on ${net.name} within 90s. Check that your wallet sent it on ${net.name} (chain ${net.id}), not another network.`
       );
     }
     if (receipt.status !== "success") throw new Error(`Transaction reverted: ${txHash}`);
     return txHash;
   };
 
-  /** Native mode: the escrowed amount travels as msg.value. arbiter may be the zero address. */
+  /**
+   * Fund a new pact. Arc (native mode): the amount travels as msg.value. Robinhood Chain
+   * (ERC-20 mode): approve the escrow token for the contract first when the allowance is
+   * short, then createPact pulls it with transferFrom. arbiter may be the zero address.
+   */
   const createPact = async (
     vendor: Address,
     amount: bigint,
@@ -288,13 +332,44 @@ export function usePactMutations() {
     arbiter: Address = zeroAddress
   ) => {
     const deadline = BigInt(Math.floor(Date.now() / 1000) + deadlineSeconds);
-    return await writeContractAsync({
-      address: pactAddress,
-      abi: PyrisPactAbi,
-      functionName: "createPact",
-      args: [vendor, arbiter, amount, deadline, title, description],
-      value: amount,
-    });
+    try {
+      if (net.mode === "erc20") {
+        if (!net.token.address) throw new Error(`${net.name} deployment has no escrow token address`);
+        if (!account) throw new Error("Connect a wallet first");
+        const allowance = (await publicClient.readContract({
+          address: net.token.address,
+          abi: Erc20Abi,
+          functionName: "allowance",
+          args: [account, pactAddress],
+        })) as bigint;
+        if (allowance < amount) {
+          setStep("approving");
+          await writeContractAsync({
+            address: net.token.address,
+            abi: Erc20Abi,
+            functionName: "approve",
+            args: [pactAddress, amount],
+          });
+        }
+        setStep("sending");
+        return await writeContractAsync({
+          address: pactAddress,
+          abi: PyrisPactAbi,
+          functionName: "createPact",
+          args: [vendor, arbiter, amount, deadline, title, description],
+        });
+      }
+      setStep("sending");
+      return await writeContractAsync({
+        address: pactAddress,
+        abi: PyrisPactAbi,
+        functionName: "createPact",
+        args: [vendor, arbiter, amount, deadline, title, description],
+        value: amount,
+      });
+    } finally {
+      setStep("idle");
+    }
   };
 
   const extendDeadline = async (pactId: bigint, newDeadline: bigint) => {
@@ -379,7 +454,9 @@ export function usePactMutations() {
     proposeResolution,
     arbitrate,
     withdraw,
-    isPending: isPending || isWaiting,
+    isPending: isPending || isWaiting || step !== "idle",
+    /** "approving" while the ERC-20 allowance tx is in flight (Robinhood Chain only). */
+    step,
     isSuccess,
     hash,
   };

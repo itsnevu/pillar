@@ -17,7 +17,7 @@ export function HowItWorks() {
           <strong>1. Fund the Milestone (Client)</strong>
           <p>
             Deposit USDC into smart contract escrow. Specify contractor address, deliverable scope,
-            and deadline. Funds remain locked and safe in Arc Chain&apos;s smart contract.
+            and deadline. Funds remain locked in the PyrisPact smart contract on Arc or Robinhood Chain.
           </p>
         </li>
         <li>
@@ -31,7 +31,7 @@ export function HowItWorks() {
           <strong>3. One-Click Instant Payout</strong>
           <p>
             The client reviews the submitted deliverable and approves payment with one click. USDC is
-            transferred directly to the contractor with sub-second Arc Chain finality.
+            transferred directly to the contractor in seconds, on the network the pact was created on.
           </p>
         </li>
       </ol>

@@ -7,8 +7,8 @@ Platform pembayaran dan escrow berbasis smart contract untuk bisnis, agency, dan
 Klien mengunci dana **USDC** ke dalam escrow milestone sebelum proyek dikerjakan. Begitu pekerjaan selesai dan disetujui, dana dicairkan langsung ke wallet kontraktor tanpa perantara.
 
 ## Keunggulan Utama
-1. **Native USDC Gas Fee di Arc Chain**:
-   Arc Chain menggunakan USDC sebagai token gas fee native. Pengguna tidak perlu membeli ETH atau token volatil lainnya. Semua transaksi (dana kontrak & biaya gas) 100% menggunakan USDC.
+1. **Dual chain: Arc dan Robinhood Chain**:
+   Di Arc Chain, USDC adalah token gas native, jadi dana kontrak dan biaya gas 100% USDC tanpa token volatil. Di Robinhood Chain (L2 Ethereum), escrow memakai USDG (stablecoin dolar, 6 desimal) dan gas dibayar ETH beberapa sen. Kontraknya sama, satu pact hidup di satu chain, network dipilih di header.
 2. **0% Potongan Platform (Beta)**:
    Tidak ada potongan komisi 10%–20% seperti platform freelance konvensional (Upwork, Freelancer, Escrow.com).
 3. **Instan & Tanpa Wire Delay**:

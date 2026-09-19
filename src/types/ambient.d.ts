@@ -154,6 +154,10 @@ declare module "viem" {
   export const formatUnits: (val: bigint, decimals: number) => string;
   export const defineChain: (chain: any) => any;
   export const zeroAddress: Address;
+  export type Chain = any;
+  export const createPublicClient: (opts: any) => any;
+  export const http: (url?: string, opts?: any) => any;
+  export const getAddress: (a: string) => Address;
 }
 
 declare module "wagmi" {
@@ -165,7 +169,7 @@ declare module "wagmi" {
   export const useDisconnect: () => { disconnect: () => void };
   export const useSwitchChain: () => { switchChain: (opts: any) => void; switchChainAsync: (opts: any) => Promise<any> };
   export const useConfig: () => any;
-  export const usePublicClient: () => any;
+  export const usePublicClient: (opts?: any) => any;
   export const useReadContract: (opts: any) => any;
   export const useReadContracts: (opts: any) => any;
   export const useWriteContract: () => {

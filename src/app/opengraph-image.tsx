@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-export const alt = "Pyris Pact — Programmable B2B Payments on Arc Chain.";
+export const alt = "Pyris Pact — Programmable B2B Payments on Arc & Robinhood Chain.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -43,7 +43,7 @@ export default async function Image() {
               fontFamily: "Helvetica, sans-serif",
             }}
           >
-            Lock USDC into trustless milestone escrows. Instant settlements and native USDC gas fees on Arc Chain.
+            Lock stablecoins into trustless milestone escrows. Instant settlement on Arc and Robinhood Chain.
           </div>
         </div>
         <div

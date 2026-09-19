@@ -14,7 +14,7 @@ export function Tabs() {
       <p className="borrow-pool-summary">
         <strong>Programmable B2B Escrow:</strong> Deposit USDC into smart contract milestones for your
         contractors, freelancers, and agency partners. Deliverables are recorded directly onchain and
-        funds disburse immediately upon client approval. Powered by Arc Chain with native USDC gas fees.
+        funds disburse immediately upon client approval. Runs on Arc (native USDC gas) and Robinhood Chain (USDG escrow).
       </p>
     </>
   );
